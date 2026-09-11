@@ -9,11 +9,14 @@
 <body>
   <header class="topbar">
     <a href="#/" class="brand">⚙️ DevOps Daily Quiz</a>
-    <nav>
+    <div class="topright">
+      <nav>
       <a href="#/" data-nav="home">홈</a>
       <a href="#/notebook" data-nav="notebook">오답노트 <span id="nb-count" class="badge" hidden></span></a>
       <a href="#/stats" data-nav="stats">통계</a>
-    </nav>
+      </nav>
+      <div class="clock mono" id="clock"><span id="clock-date"></span><span id="clock-time"></span></div>
+    </div>
   </header>
 
   <main id="app"></main>
@@ -25,6 +28,11 @@
   <script src="js/data/aws.js"></script>
   <script src="js/data/network.js"></script>
   <script src="js/data/sql.js"></script>
+  <script src="js/data/linux-extra.js"></script>
+  <script src="js/data/container-extra.js"></script>
+  <script src="js/data/aws-extra.js"></script>
+  <script src="js/data/network-extra.js"></script>
+  <script src="js/data/sql-extra.js"></script>
   <script src="js/store.js"></script>
   <script src="js/scheduler.js"></script>
   <script src="js/quiz.js"></script>

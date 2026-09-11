@@ -40,7 +40,11 @@ pre { background: #0b0d12; border: 1px solid var(--border); padding: 10px 12px; 
   background: var(--panel); position: sticky; top: 0; z-index: 10;
 }
 .brand { color: var(--text); font-weight: 700; font-size: 17px; }
+.topright { display: flex; align-items: center; gap: 16px; }
 .topbar nav { display: flex; gap: 6px; }
+.clock { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.clock #clock-date { font-size: 11px; color: var(--muted); }
+.clock #clock-time { font-size: 16px; font-weight: 700; letter-spacing: .02em; }
 .topbar nav a { color: var(--muted); padding: 6px 12px; border-radius: 8px; font-weight: 500; }
 .topbar nav a.active, .topbar nav a:hover { color: var(--text); background: var(--panel-2); }
 .badge { display: inline-block; min-width: 20px; padding: 0 6px; border-radius: 10px; background: var(--bad); color: #fff; font-size: 12px; text-align: center; margin-left: 4px; }
@@ -102,6 +106,7 @@ h2 { font-size: 18px; margin: 24px 0 10px; }
 .chip.type { background: rgba(139,145,165,.15); }
 
 .banner { border-left: 4px solid var(--warn); }
+.notice { background: rgba(245,185,66,.1); border: 1px solid rgba(245,185,66,.35); color: var(--warn); border-radius: 8px; padding: 8px 12px; font-size: 13px; margin-bottom: 10px; }
 
 /* Quiz */
 .qhead { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
@@ -183,6 +188,7 @@ th { color: var(--muted); font-weight: 600; font-size: 12px; }
 
 @media (max-width: 600px) {
   .topbar { padding: 10px 12px; } .brand { font-size: 15px; }
+  .topright { gap: 8px; } .clock #clock-date { display: none; } .clock #clock-time { font-size: 13px; }
   main { padding: 16px 12px 40px; }
   .qtext { font-size: 16px; }
   .nb-item { grid-template-columns: 24px 1fr; }

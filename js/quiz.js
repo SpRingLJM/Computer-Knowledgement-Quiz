@@ -63,6 +63,30 @@ const Quiz = (() => {
     };
 
     let chosen;
+    const fill = []; // 부족한 난이도를 인접 난이도에서 보충한 내역
+    const ORDER = ['easy', 'normal', 'hard', 'extreme'];
+    // 요청 난이도 풀이 부족하면 가까운 난이도부터 채움 (사용된 id 제외)
+    const pickWithFallback = (diff, n, used) => {
+      const got = pick(pool.filter(q => q.diff === diff && !used.has(q.id)), n);
+      got.forEach(q => used.add(q.id));
+      let short = n - got.length;
+      if (short > 0) {
+        const i = ORDER.indexOf(diff);
+        const neighbours = [];
+        for (let d = 1; d < ORDER.length; d++) {
+          if (i - d >= 0) neighbours.push(ORDER[i - d]);
+          if (i + d < ORDER.length) neighbours.push(ORDER[i + d]);
+        }
+        for (const nd of neighbours) {
+          if (short <= 0) break;
+          const extra = pick(pool.filter(q => q.diff === nd && !used.has(q.id)), short);
+          extra.forEach(q => { used.add(q.id); got.push(q); });
+          if (extra.length) fill.push({ from: diff, to: nd, n: extra.length });
+          short -= extra.length;
+        }
+      }
+      return got;
+    };
     if (difficulty === 'random') {
       // 가중치 → 정수 배분 (최대 나머지법)
       const keys = Object.keys(RANDOM_WEIGHTS);
@@ -73,17 +97,12 @@ const Quiz = (() => {
 
       chosen = [];
       const used = new Set();
-      keys.forEach((k, i) => {
-        pick(pool.filter(q => q.diff === k), base[i]).forEach(q => { chosen.push(q); used.add(q.id); });
-      });
-      if (chosen.length < count) { // 어떤 난이도가 부족하면 나머지에서 보충
-        pick(pool.filter(q => !used.has(q.id)), count - chosen.length).forEach(q => chosen.push(q));
-      }
+      keys.forEach((k, i) => { pickWithFallback(k, base[i], used).forEach(q => chosen.push(q)); });
       chosen = shuffle(chosen, rnd);
     } else {
-      chosen = pick(pool.filter(q => q.diff === difficulty), count);
+      chosen = pickWithFallback(difficulty, count, new Set());
     }
-    return chosen.map(q => q.id);
+    return { qids: chosen.map(q => q.id), fill };
   }
 
   /* ---------- 채점 ---------- */

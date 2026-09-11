@@ -37,6 +37,20 @@
   }
   window.addEventListener('hashchange', route);
 
+  /* ---------------- 우측 상단 시계 ---------------- */
+  (function clock() {
+    const $d = document.getElementById('clock-date'), $t = document.getElementById('clock-time');
+    const DAYS = ['일', '월', '화', '수', '목', '금', '토'];
+    const p2 = n => String(n).padStart(2, '0');
+    const tick = () => {
+      const d = new Date();
+      $d.textContent = `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())} (${DAYS[d.getDay()]})`;
+      $t.textContent = `${p2(d.getHours())}:${p2(d.getMinutes())}:${p2(d.getSeconds())}`;
+    };
+    tick();
+    setInterval(tick, 1000);
+  })();
+
   /* ---------------- 홈 ---------------- */
   function renderHome() {
     const st = Store.get();
@@ -98,9 +112,11 @@
     const refreshAvail = () => {
       const n = Quiz.countBy(s.category);
       const el = document.getElementById('avail');
-      el.textContent = s.difficulty === 'random'
+      const { fill } = Quiz.buildDaily(s.category, s.count, s.difficulty);
+      const base = s.difficulty === 'random'
         ? `${Quiz.CATEGORIES[s.category].name} · 전체 ${n.total}문제 (E${n.easy}/N${n.normal}/H${n.hard}/X${n.extreme})`
         : `${Quiz.CATEGORIES[s.category].name} · ${Quiz.DIFFS[s.difficulty]} ${n[s.difficulty]}문제 보유`;
+      el.innerHTML = h(base) + (fill.length ? ` <span style="color:var(--warn)">· ${fill.map(f => `${Quiz.DIFFS[f.from]} 부족분 ${f.n}개는 ${Quiz.DIFFS[f.to]} 에서 보충`).join(', ')}</span>` : '');
     };
     refreshAvail();
 
@@ -112,6 +128,7 @@
     $app.querySelectorAll('#seg-count button').forEach(b => b.onclick = () => {
       Store.setSetting('count', Number(b.dataset.count));
       $app.querySelectorAll('#seg-count button').forEach(x => x.classList.toggle('on', x === b));
+      refreshAvail();
     });
     $app.querySelectorAll('#seg-diff button').forEach(b => b.onclick = () => {
       Store.setSetting('difficulty', b.dataset.diff);
@@ -121,9 +138,9 @@
 
     document.getElementById('start').onclick = () => {
       if (active && !confirm('진행 중인 세션을 버리고 새로 시작할까요?')) return;
-      const qids = Quiz.buildDaily(s.category, s.count, s.difficulty);
+      const { qids, fill } = Quiz.buildDaily(s.category, s.count, s.difficulty);
       if (!qids.length) return alert('해당 조건의 문제가 없습니다.');
-      startSession({ mode: 'daily', cat: s.category, diff: s.difficulty, qids });
+      startSession({ mode: 'daily', cat: s.category, diff: s.difficulty, qids, fill });
     };
     const r = document.getElementById('start-review');
     if (r) r.onclick = () => {
@@ -165,7 +182,11 @@
               <div class="hint" style="margin-top:6px">대소문자·앞뒤 공백·앞의 $ 는 무시됩니다.</div>`;
     };
 
+    const fillNote = sess.fill?.length
+      ? `<div class="notice">⚠ ${sess.fill.map(f => `${Quiz.DIFFS[f.from]} 문제가 부족해 ${Quiz.DIFFS[f.to]} 에서 ${f.n}개 보충`).join(' · ')} — 총 ${sess.qids.length}문제</div>`
+      : '';
     $app.innerHTML = `
+      ${fillNote}
       <div class="hint" style="margin-bottom:6px">${h(sessionTitle(sess))}</div>
       <div class="progress"><div style="width:${(sess.idx / sess.qids.length) * 100}%"></div></div>
       <div class="card">
