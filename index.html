@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DevOps Daily Quiz</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <a href="#/" class="brand">⚙️ DevOps Daily Quiz</a>
+    <nav>
+      <a href="#/" data-nav="home">홈</a>
+      <a href="#/notebook" data-nav="notebook">오답노트 <span id="nb-count" class="badge" hidden></span></a>
+      <a href="#/stats" data-nav="stats">통계</a>
+    </nav>
+  </header>
+
+  <main id="app"></main>
+
+  <footer class="foot">문제은행 기반 · 진행 상황은 이 브라우저(localStorage)에 저장됩니다.</footer>
+
+  <script src="js/data/linux.js"></script>
+  <script src="js/data/container.js"></script>
+  <script src="js/data/aws.js"></script>
+  <script src="js/data/network.js"></script>
+  <script src="js/data/sql.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/scheduler.js"></script>
+  <script src="js/quiz.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
