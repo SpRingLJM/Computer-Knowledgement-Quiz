@@ -355,7 +355,9 @@
       } else {
         verdict = correct ? '✅ 정답입니다' : '❌ 오답입니다';
         detail = `${q.type === 'short' ? `<div class="hint">내 답: <code>${h(input)}</code></div>` : ''}
-          <h4>정답</h4><p><code>${h(Quiz.answerText(q))}</code>${q.accept?.length && q.type === 'short' ? ` <span class="hint">(허용: ${q.accept.map(a => `<code>${h(a)}</code>`).join(' ')})</span>` : ''}</p>`;
+          <h4>정답</h4>
+          <div class="answer ${q.type === 'short' ? 'mono' : ''}">${h(Quiz.answerText(q))}</div>
+          ${q.accept?.length && q.type === 'short' ? `<div class="accept">이것도 정답: ${q.accept.map(a => `<code>${h(a)}</code>`).join(' ')}</div>` : ''}`;
       }
 
       document.getElementById('result').innerHTML = `
@@ -488,8 +490,8 @@
             <div class="nb-q">${fmt(q.q)}</div>
             <div class="nb-meta">
               ${chip('', Quiz.CATEGORIES[q.cat].name)} ${diffChip(q.diff)} ${chip('type', Quiz.TYPES[q.type])}
-              <span class="hint">정답: <code>${h(Quiz.answerText(q))}</code></span>
             </div>
+            <div class="nb-ans"><span class="lbl">정답</span><span class="val ${q.type === 'short' || q.type === 'task' ? 'mono' : ''}">${h(Quiz.answerText(q))}</span></div>
             <div class="nb-meta">
               <span class="${due ? 'due-now' : e.stage >= 3 ? 'done' : 'hint'}">${h(Scheduler.statusText(e))}</span>
               <span class="hint">· 등록 ${new Date(e.createdAt).toLocaleDateString('ko-KR')}</span>
