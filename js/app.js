@@ -58,16 +58,43 @@
     const due = Scheduler.dueEntries();
     const active = st.active;
 
-    const catCards = Object.entries(Quiz.CATEGORIES).map(([k, c]) => {
+    const cats = Quiz.catsOf(s.track);
+    const catCards = cats.map(k => {
+      const c = Quiz.CATEGORIES[k];
       const n = Quiz.countBy(k);
       return `<button class="cat ${s.category === k ? 'on' : ''}" data-cat="${k}">
         <div class="ic">${c.icon}</div><div class="nm">${h(c.name)}</div>
         <div class="ds">${h(c.desc)}</div><div class="ds">문제 ${n.total}개</div></button>`;
     }).join('');
 
+    const trackCards = Object.entries(Quiz.TRACKS).map(([k, t]) => {
+      const ks = Quiz.catsOf(k);
+      const n = ks.reduce((a, c) => a + Quiz.countBy(c).total, 0);
+      return `<button class="track ${s.track === k ? 'on' : ''}" data-track="${k}">
+        <div class="ic">${t.icon}</div><div class="nm">${h(t.name)}</div>
+        <div class="ds">${h(t.desc)}</div>
+        <div class="n">${ks.length}개 분야 · 문제 ${n}개</div></button>`;
+    }).join('');
+
+    const firstVisit = !st.sessions.length && !Object.keys(st.seen).length;
+    const hero = firstVisit ? `<div class="hero">
+      <h1>컴퓨터 상식 퀴즈</h1>
+      <p>매일 새로 뽑히는 문제로 컴퓨터·인터넷·보안 상식부터 서버 실무까지 점검합니다.</p>
+      <ul>
+        <li><b>가입이 필요 없습니다.</b> 아래에서 분야를 고르고 바로 시작하세요.</li>
+        <li><b>틀린 문제는 자동으로 오답노트에 쌓입니다.</b> 1일 뒤, 그리고 3일 또는 7일 뒤에 다시 출제됩니다.</li>
+        <li><b>문제 유형은 다섯 가지</b> — O/X · 객관식 · 단답형 · 서술형 · 과제형(명령어를 순서대로 입력).</li>
+        <li>기록은 서버로 전송되지 않고 <b>이 브라우저에만</b> 저장됩니다.</li>
+      </ul>
+    </div>` : '';
+
     $app.innerHTML = `
+      ${hero}
       <h1>오늘의 퀴즈 <span class="hint mono">${Quiz.todayKey()}</span></h1>
-      <p class="sub">매일 새로운 세트가 생성됩니다. 명령어 위주 + 개념 문제 (O/X · 객관식 · 단답형)</p>
+      <p class="sub">매일 새로운 세트가 생성됩니다. 분야와 난이도를 고른 뒤 시작하세요.</p>
+
+      <span class="label">트랙</span>
+      <div class="tracks">${trackCards}</div>
 
       ${active ? `<div class="card banner" style="border-left-color: var(--accent)">
         <div class="row between">
@@ -120,6 +147,13 @@
     };
     refreshAvail();
 
+    $app.querySelectorAll('.track').forEach(b => b.onclick = () => {
+      if (b.dataset.track === s.track) return;
+      Store.setSetting('track', b.dataset.track);
+      const ks = Quiz.catsOf(b.dataset.track);
+      if (!ks.includes(s.category)) Store.setSetting('category', ks[0]);
+      route();
+    });
     $app.querySelectorAll('.cat').forEach(b => b.onclick = () => {
       Store.setSetting('category', b.dataset.cat);
       $app.querySelectorAll('.cat').forEach(x => x.classList.toggle('on', x === b));
@@ -178,9 +212,29 @@
     const body = () => {
       if (q.type === 'ox') return `<div class="ox"><button class="opt" data-v="true">O</button><button class="opt" data-v="false">X</button></div>`;
       if (q.type === 'mcq') return `<div class="opts">${q.options.map((o, i) => `<button class="opt" data-v="${i}"><span class="k">${'①②③④⑤'[i]}</span>${fmt(o)}</button>`).join('')}</div>`;
+      if (q.type === 'essay') {
+        const need = q.minKeywords ?? Math.ceil((q.keywords || []).length * 0.6);
+        return `<textarea class="ans" id="essay" placeholder="${q.placeholder ? h(q.placeholder) : '아는 만큼 문장으로 설명해 보세요.'}" spellcheck="false"></textarea>
+                <div class="hint" style="margin-top:6px">핵심 키워드 ${need}개 이상이 들어가면 정답으로 처리됩니다. 제출 후 모범답안과 비교해 보세요.</div>`;
+      }
+      if (q.type === 'task') {
+        return `<div class="task">
+          ${q.scene ? `<div class="scene">${fmt(q.scene)}</div>` : ''}
+          ${q.steps.map((stp, i) => `<div class="task-step" data-i="${i}">
+            <div class="cmt">${fmt(stp.hint)}</div>
+            <div class="line">
+              <span class="ps mono">$</span>
+              <input class="mono" data-i="${i}" placeholder="명령어를 입력하세요" autocomplete="off" spellcheck="false" />
+              <span class="verdict-i"></span>
+            </div>
+          </div>`).join('')}
+        </div>
+        <div class="hint" style="margin-top:8px">주석이 각 단계의 지시문입니다. 위에서부터 차례대로 입력한 뒤 정답을 확인하세요. (Enter 로 다음 칸 이동)</div>`;
+      }
       return `<input class="ans mono" id="short" placeholder="${q.placeholder ? h(q.placeholder) : '답을 입력하고 Enter'}" autocomplete="off" spellcheck="false" />
               <div class="hint" style="margin-top:6px">대소문자·앞뒤 공백·앞의 $ 는 무시됩니다.</div>`;
     };
+    const typed = t => t === 'short' || t === 'essay' || t === 'task';
 
     const fillNote = sess.fill?.length
       ? `<div class="notice">⚠ ${sess.fill.map(f => `${Quiz.DIFFS[f.from]} 문제가 부족해 ${Quiz.DIFFS[f.to]} 에서 ${f.n}개 보충`).join(' · ')} — 총 ${sess.qids.length}문제</div>`
@@ -206,7 +260,7 @@
         ${q.code ? `<pre>${h(q.code)}</pre>` : ''}
         <div id="body">${body()}</div>
         <div id="result"></div>
-        <div class="actions" id="act"><button class="btn primary" id="submit" ${q.type === 'short' ? '' : 'disabled'}>정답 확인</button></div>
+        <div class="actions" id="act"><button class="btn primary" id="submit" ${typed(q.type) ? '' : 'disabled'}>정답 확인</button></div>
       </div>
     `;
 
@@ -217,6 +271,16 @@
       const inp = document.getElementById('short');
       inp.focus();
       inp.addEventListener('keydown', e => { if (e.key === 'Enter' && !answered) submit(); });
+    } else if (q.type === 'essay') {
+      document.getElementById('essay').focus();
+    } else if (q.type === 'task') {
+      const inputs = [...$app.querySelectorAll('.task input')];
+      inputs[0]?.focus();
+      inputs.forEach((el, i) => el.addEventListener('keydown', e => {
+        if (e.key !== 'Enter' || answered) return;
+        e.preventDefault();
+        if (i + 1 < inputs.length) inputs[i + 1].focus(); else submit();
+      }));
     } else {
       $app.querySelectorAll('.opt').forEach(b => b.onclick = () => {
         if (answered) return;
@@ -229,7 +293,20 @@
 
     function submit() {
       if (answered) return;
-      if (q.type === 'short') { input = document.getElementById('short').value; if (!input.trim()) return; document.getElementById('short').disabled = true; }
+      if (q.type === 'short') {
+        input = document.getElementById('short').value;
+        if (!input.trim()) return;
+        document.getElementById('short').disabled = true;
+      } else if (q.type === 'essay') {
+        input = document.getElementById('essay').value;
+        if (!input.trim()) return;
+        document.getElementById('essay').disabled = true;
+      } else if (q.type === 'task') {
+        const els = [...$app.querySelectorAll('.task input')];
+        input = els.map(el => el.value);
+        if (!input.some(v => v.trim())) return;
+        els.forEach(el => el.disabled = true);
+      }
       answered = true;
       const correct = Quiz.grade(q, input);
 
@@ -241,11 +318,50 @@
         else if (v === input) b.classList.add('wrong');
       });
 
+      // 유형별 결과 본문
+      let verdict, detail;
+      if (q.type === 'task') {
+        const g = Quiz.gradeTask(q, input);
+        // 각 단계에 정오 표시
+        q.steps.forEach((stp, i) => {
+          const $st = $app.querySelector(`.task-step[data-i="${i}"]`);
+          $st.classList.add(g.per[i] ? 'right' : 'wrong');
+          $st.querySelector('.verdict-i').textContent = g.per[i] ? '✓' : '✗';
+          if (!g.per[i]) {
+            const sol = document.createElement('div');
+            sol.className = 'sol mono';
+            sol.textContent = '정답: ' + stp.answer;
+            $st.appendChild(sol);
+          }
+        });
+        verdict = correct ? '✅ 모든 단계 정답입니다' : `❌ ${g.total}단계 중 ${g.n}단계 정답`;
+        const lines = [];
+        q.steps.forEach((stp, i) => { if (i) lines.push(''); lines.push(stp.hint, stp.answer); });
+        detail = `<div class="task-score">진행: ${g.n} / ${g.total} 단계</div>
+          <h4>전체 정답</h4>
+          <pre>${h(lines.join('\n'))}</pre>`;
+      } else if (q.type === 'essay') {
+        const g = Quiz.gradeEssay(q, input);
+        verdict = correct
+          ? `✅ 핵심 키워드 ${g.hit.length}개를 짚었습니다`
+          : `❌ 키워드 ${g.hit.length}개 — ${g.need}개 이상 필요합니다`;
+        detail = `<h4>내 답</h4><div class="model">${h(input)}</div>
+          <h4>핵심 키워드 ${g.hit.length} / ${(q.keywords || []).length}</h4>
+          <div class="kws">
+            ${g.hit.map(k => `<span class="kw hit">✓ ${h(k)}</span>`).join('')}
+            ${g.miss.map(k => `<span class="kw miss">· ${h(k)}</span>`).join('')}
+          </div>
+          <h4>모범답안</h4><div class="model">${fmt(q.model)}</div>`;
+      } else {
+        verdict = correct ? '✅ 정답입니다' : '❌ 오답입니다';
+        detail = `${q.type === 'short' ? `<div class="hint">내 답: <code>${h(input)}</code></div>` : ''}
+          <h4>정답</h4><p><code>${h(Quiz.answerText(q))}</code>${q.accept?.length && q.type === 'short' ? ` <span class="hint">(허용: ${q.accept.map(a => `<code>${h(a)}</code>`).join(' ')})</span>` : ''}</p>`;
+      }
+
       document.getElementById('result').innerHTML = `
         <div class="result ${correct ? 'ok' : 'bad'}">
-          <div class="verdict">${correct ? '✅ 정답입니다' : '❌ 오답입니다'}</div>
-          ${q.type === 'short' ? `<div class="hint">내 답: <code>${h(input)}</code></div>` : ''}
-          <h4>정답</h4><p><code>${h(Quiz.answerText(q))}</code>${q.accept?.length && q.type === 'short' ? ` <span class="hint">(허용: ${q.accept.map(a => `<code>${h(a)}</code>`).join(' ')})</span>` : ''}</p>
+          <div class="verdict">${verdict}</div>
+          ${detail}
           <h4>해설</h4><p>${fmt(q.explain)}</p>
           <h4>실사용 예시 / 사례</h4><p>${fmt(q.example)}</p>
           ${!correct && sess.mode === 'daily' ? `<p class="hint" style="margin-top:12px">📝 오답노트에 추가되었습니다. 내일 다시 출제됩니다.</p>` : ''}
@@ -272,7 +388,10 @@
       $next.onclick = () => {
         Store.markSeen(q.id, correct);
         Scheduler.record(q.id, correct, mark, sess.mode);
-        sess.results.push({ qid: q.id, correct, mark, input: q.type === 'short' ? input : undefined });
+        sess.results.push({
+          qid: q.id, correct, mark,
+          input: q.type === 'short' ? input : q.type === 'task' ? input.join(' | ') : undefined,
+        });
         sess.idx++;
         Store.save();
         updateBadge();
@@ -392,7 +511,7 @@
       <p class="sub">틀린 문제는 자동으로 기록됩니다. 문제를 골라 직접 테스트할 수도 있습니다. (수동 테스트는 복습 스케줄에 영향을 주지 않습니다)</p>
       <div class="card">
         <div class="row">
-          <select id="f-cat"><option value="all">모든 카테고리</option>${Object.entries(Quiz.CATEGORIES).map(([k, c]) => `<option value="${k}">${h(c.name)}</option>`).join('')}</select>
+          <select id="f-cat"><option value="all">모든 분야</option>${Object.entries(Quiz.TRACKS).map(([tk, t]) => `<optgroup label="${h(t.name)}">${Quiz.catsOf(tk).map(k => `<option value="${k}">${h(Quiz.CATEGORIES[k].name)}</option>`).join('')}</optgroup>`).join('')}</select>
           <select id="f-mark"><option value="all">모든 이해도</option><option value="O">O 완전 이해</option><option value="T">△ 애매함</option><option value="X">X 모름/찍음</option><option value="none">미표시</option></select>
           <select id="f-status"><option value="all">모든 상태</option><option value="due">오늘 복습</option><option value="pending">복습 대기</option><option value="finished">자동 복습 완료</option></select>
           <span class="hint">총 ${entries.length}문제</span>
@@ -473,12 +592,17 @@
         <div class="stat"><div class="v">${totalC + totalW ? Math.round(totalC / (totalC + totalW) * 100) : 0}%</div><div class="k">누적 정답률</div></div>
         <div class="stat"><div class="v">${Object.keys(st.notebook).length}</div><div class="k">오답노트</div></div>
       </div>
-      <div class="card" style="margin-top:14px">
-        <h2 style="margin-top:0">카테고리별</h2>
-        <table><thead><tr><th>카테고리</th><th>진도</th><th>정답률</th><th>오답노트</th></tr></thead><tbody>
-        ${perCat.map(r => `<tr><td>${Quiz.CATEGORIES[r.k].icon} ${h(Quiz.CATEGORIES[r.k].name)}</td><td>${r.solved} / ${r.total}</td><td>${r.c + r.w ? Math.round(r.c / (r.c + r.w) * 100) + '%' : '-'}</td><td>${r.nb}</td></tr>`).join('')}
-        </tbody></table>
-      </div>
+      ${Object.entries(Quiz.TRACKS).map(([tk, t]) => {
+        const rows = perCat.filter(r => Quiz.CATEGORIES[r.k].track === tk);
+        const solved = rows.reduce((a, r) => a + r.solved, 0);
+        const total = rows.reduce((a, r) => a + r.total, 0);
+        return `<div class="card" style="margin-top:14px">
+          <h2 style="margin-top:0">${t.icon} ${h(t.name)} <span class="hint">${solved} / ${total}</span></h2>
+          <table><thead><tr><th>분야</th><th>진도</th><th>정답률</th><th>오답노트</th></tr></thead><tbody>
+          ${rows.map(r => `<tr><td>${Quiz.CATEGORIES[r.k].icon} ${h(Quiz.CATEGORIES[r.k].name)}</td><td>${r.solved} / ${r.total}</td><td>${r.c + r.w ? Math.round(r.c / (r.c + r.w) * 100) + '%' : '-'}</td><td>${r.nb}</td></tr>`).join('')}
+          </tbody></table>
+        </div>`;
+      }).join('')}
       <div class="card">
         <h2 style="margin-top:0">최근 세션</h2>
         ${recent.length ? `<table><thead><tr><th>일시</th><th>세션</th><th>점수</th></tr></thead><tbody>

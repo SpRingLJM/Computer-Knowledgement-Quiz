@@ -1,15 +1,27 @@
 /* 문제 은행 접근, 일일 세트 생성, 채점 */
 const Quiz = (() => {
+  const TRACKS = {
+    general: { name: '컴퓨터 상식', icon: '🙂', desc: '누구나 아는 만큼 풀 수 있는 컴퓨터·인터넷·보안 상식' },
+    devops:  { name: 'DevOps 실무', icon: '🛠️', desc: '명령어를 직접 입력해 푸는 서버·클라우드 실무 문제' },
+  };
   const CATEGORIES = {
-    linux:     { name: 'OS · Linux',        icon: '🐧', desc: '쉘 명령어, 권한, 프로세스, 파일시스템' },
-    container: { name: '컨테이너',           icon: '🐳', desc: 'Docker, Kubernetes 명령/개념' },
-    aws:       { name: 'Cloud · AWS',        icon: '☁️', desc: 'IAM, EC2, S3, VPC, CLI' },
-    network:   { name: '네트워크',           icon: '🌐', desc: 'TCP/IP, DNS, HTTP, 라우팅, 진단' },
-    sql:       { name: 'SQL',                icon: '🗄️', desc: 'SELECT, JOIN, 인덱스, 트랜잭션' },
+    // 컴퓨터 상식 트랙
+    basics:    { track: 'general', name: '컴퓨터 기초',      icon: '💻', desc: '하드웨어, 운영체제, 파일, 저장장치' },
+    internet:  { track: 'general', name: '인터넷 · 웹',      icon: '🌐', desc: '브라우저, 주소창, 와이파이, 이메일' },
+    security:  { track: 'general', name: '보안 · 개인정보',  icon: '🔐', desc: '피싱, 비밀번호, 2단계 인증, 백신' },
+    office:    { track: 'general', name: '오피스 · 생산성',  icon: '📄', desc: '단축키, 파일 형식, 클라우드, 백업' },
+    ittrend:   { track: 'general', name: 'IT 상식 · 신기술', icon: '🤖', desc: 'AI, 클라우드, 데이터, 스마트폰' },
+    // DevOps 실무 트랙
+    linux:     { track: 'devops', name: 'OS · Linux',        icon: '🐧', desc: '쉘 명령어, 권한, 프로세스, 파일시스템' },
+    container: { track: 'devops', name: '컨테이너',           icon: '🐳', desc: 'Docker, Kubernetes 명령/개념' },
+    aws:       { track: 'devops', name: 'Cloud · AWS',        icon: '☁️', desc: 'IAM, EC2, S3, VPC, CLI' },
+    network:   { track: 'devops', name: '네트워크',           icon: '🌐', desc: 'TCP/IP, DNS, HTTP, 라우팅, 진단' },
+    sql:       { track: 'devops', name: 'SQL',                icon: '🗄️', desc: 'SELECT, JOIN, 인덱스, 트랜잭션' },
   };
   const DIFFS = { easy: 'Easy', normal: 'Normal', hard: 'Hard', extreme: 'Extreme' };
   const RANDOM_WEIGHTS = { easy: 0.40, normal: 0.35, hard: 0.20, extreme: 0.05 };
-  const TYPES = { ox: 'O/X', mcq: '객관식', short: '단답형' };
+  const TYPES = { ox: 'O/X', mcq: '객관식', short: '단답형', essay: '서술형', task: '과제형' };
+  const catsOf = (track) => Object.keys(CATEGORIES).filter(k => CATEGORIES[k].track === track);
 
   // 각 data 파일이 window.QUIZ_BANK[cat] 에 등록
   const bank = window.QUIZ_BANK || {};
@@ -112,17 +124,49 @@ const Quiz = (() => {
     .replace(/\s+/g, ' ')
     .replace(/[;`'"]/g, '');
 
+  const matchesShort = (input, answer, accept) =>
+    [answer, ...(accept || [])].map(norm).includes(norm(input));
+
+  /* 서술형: 핵심 키워드 포함 개수로 잠정 판정.
+   * 최종 이해도는 사용자가 O/△/X 로 직접 매긴다. */
+  function gradeEssay(q, input) {
+    const text = String(input ?? '').toLowerCase().replace(/\s+/g, '');
+    const kws = q.keywords || [];
+    const hit = kws.filter(k => {
+      const variants = Array.isArray(k) ? k : [k];
+      return variants.some(v => text.includes(String(v).toLowerCase().replace(/\s+/g, '')));
+    });
+    const label = k => (Array.isArray(k) ? k[0] : k);
+    const need = q.minKeywords ?? Math.ceil(kws.length * 0.6);
+    return {
+      hit: hit.map(label),
+      miss: kws.filter(k => !hit.includes(k)).map(label),
+      need,
+      correct: hit.length >= need,
+    };
+  }
+
+  /* 과제형: 단계별로 채점하고 부분 점수를 돌려준다. 전 단계 정답일 때만 정답 처리. */
+  function gradeTask(q, inputs) {
+    const per = q.steps.map((st, i) => matchesShort(inputs?.[i], st.answer, st.accept));
+    const n = per.filter(Boolean).length;
+    return { per, n, total: q.steps.length, correct: n === q.steps.length };
+  }
+
   function grade(q, input) {
     if (q.type === 'ox') return input === q.answer;
     if (q.type === 'mcq') return input === q.answer;
+    if (q.type === 'essay') return gradeEssay(q, input).correct;
+    if (q.type === 'task') return gradeTask(q, input).correct;
     // short
-    const cands = [q.answer, ...(q.accept || [])].map(norm);
-    return cands.includes(norm(input));
+    return matchesShort(input, q.answer, q.accept);
   }
 
   function answerText(q) {
     if (q.type === 'ox') return q.answer ? 'O (맞다)' : 'X (틀리다)';
     if (q.type === 'mcq') return `${'①②③④⑤'[q.answer]} ${q.options[q.answer]}`;
+    if (q.type === 'task') return q.steps.map(st => st.answer).join(' → ');
+    if (q.type === 'essay') return (q.keywords || []).map(k => (Array.isArray(k) ? k[0] : k)).join(' · ');
     return q.answer;
   }
 
@@ -132,5 +176,6 @@ const Quiz = (() => {
     return r;
   };
 
-  return { CATEGORIES, DIFFS, TYPES, RANDOM_WEIGHTS, all, byId, buildDaily, grade, answerText, todayKey, countBy };
+  return { TRACKS, CATEGORIES, DIFFS, TYPES, RANDOM_WEIGHTS, all, byId, catsOf,
+           buildDaily, grade, gradeEssay, gradeTask, answerText, todayKey, countBy };
 })();

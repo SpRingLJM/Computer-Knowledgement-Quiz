@@ -2,27 +2,57 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DevOps Daily Quiz</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>컴퓨터 상식 퀴즈 — 매일 푸는 IT·DevOps 문제</title>
+  <meta name="description" content="컴퓨터·인터넷·보안 상식부터 Linux·Docker·AWS·네트워크·SQL 실무까지. 가입 없이 바로 푸는 매일의 퀴즈와 자동 오답노트." />
+  <meta name="theme-color" content="#0f1117" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="컴퓨터 상식 퀴즈" />
+  <meta property="og:description" content="컴퓨터·인터넷·보안 상식부터 DevOps 실무까지. 가입 없이 바로 푸는 매일의 퀴즈와 자동 오답노트." />
+  <meta property="og:image" content="og.png" />
+  <meta property="og:locale" content="ko_KR" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%235b8cff'/%3E%3Ctext x='50' y='72' font-size='60' text-anchor='middle' fill='%23fff' font-family='system-ui,sans-serif' font-weight='700'%3E%3F%3C/text%3E%3C/svg%3E" />
+  <script>
+    /* FOUC 방지: 스타일시트보다 먼저 테마를 확정한다 */
+    (function () {
+      try {
+        var saved = localStorage.getItem('quiz_theme');
+        var sys = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', saved || sys);
+      } catch (e) { document.documentElement.setAttribute('data-theme', 'dark'); }
+    })();
+  </script>
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
   <header class="topbar">
-    <a href="#/" class="brand">⚙️ DevOps Daily Quiz</a>
+    <a href="#/" class="brand">🧠 <span class="brand-t">컴퓨터 상식 퀴즈</span></a>
     <div class="topright">
       <nav>
-      <a href="#/" data-nav="home">홈</a>
-      <a href="#/notebook" data-nav="notebook">오답노트 <span id="nb-count" class="badge" hidden></span></a>
-      <a href="#/stats" data-nav="stats">통계</a>
+        <a href="#/" data-nav="home">홈</a>
+        <a href="#/notebook" data-nav="notebook">오답노트 <span id="nb-count" class="badge" hidden></span></a>
+        <a href="#/stats" data-nav="stats">통계</a>
       </nav>
+      <button id="theme-toggle" class="icon-btn" type="button" aria-label="밝은 테마로 전환"><span aria-hidden="true">🌙</span></button>
       <div class="clock mono" id="clock"><span id="clock-date"></span><span id="clock-time"></span></div>
     </div>
   </header>
 
   <main id="app"></main>
 
-  <footer class="foot">문제은행 기반 · 진행 상황은 이 브라우저(localStorage)에 저장됩니다.</footer>
+  <footer class="foot">
+    가입 없음 · 서버로 전송되지 않음 · 학습 기록은 이 브라우저(localStorage)에만 저장됩니다.
+    <a href="https://github.com/SpRingLJM/Computer-Knowledgement-Quiz" target="_blank" rel="noopener">소스 보기</a>
+  </footer>
 
+  <!-- 컴퓨터 상식 트랙 -->
+  <script src="js/data/basics.js"></script>
+  <script src="js/data/internet.js"></script>
+  <script src="js/data/security.js"></script>
+  <script src="js/data/office.js"></script>
+  <script src="js/data/ittrend.js"></script>
+  <!-- DevOps 실무 트랙 -->
   <script src="js/data/linux.js"></script>
   <script src="js/data/container.js"></script>
   <script src="js/data/aws.js"></script>
@@ -33,7 +63,15 @@
   <script src="js/data/aws-extra.js"></script>
   <script src="js/data/network-extra.js"></script>
   <script src="js/data/sql-extra.js"></script>
+  <!-- 서술형 · 과제형 -->
+  <script src="js/data/linux-adv.js"></script>
+  <script src="js/data/container-adv.js"></script>
+  <script src="js/data/aws-adv.js"></script>
+  <script src="js/data/network-adv.js"></script>
+  <script src="js/data/sql-adv.js"></script>
+
   <script src="js/store.js"></script>
+  <script src="js/theme.js"></script>
   <script src="js/scheduler.js"></script>
   <script src="js/quiz.js"></script>
   <script src="js/app.js"></script>
