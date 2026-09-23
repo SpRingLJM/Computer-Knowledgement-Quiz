@@ -191,7 +191,21 @@
     return `${Quiz.CATEGORIES[sess.cat].name} · ${sess.diff === 'random' ? 'Random' : Quiz.DIFFS[sess.diff]}`;
   }
 
+  // 문제 순서를 시작할 때마다 무작위로 섞는다 (Fisher-Yates).
+  // 오늘의 문제는 날짜 시드로 "어떤 문제를 낼지" 만 정하고, "순서" 는 매번 달라져야 외워서 푸는 걸 막을 수 있다.
+  function shuffled(arr) {
+    const a = arr.slice();                                  // 원본 배열(오답노트 순서 등)은 건드리지 않음
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));        // 0..i 중 하나를 골라
+      [a[i], a[j]] = [a[j], a[i]];                          // 맨 뒤와 자리 교환
+    }
+    return a;
+  }
+
+  // 새 세션 시작 (오늘의 문제·오답 복습·오답노트 선택 테스트 공통 진입점).
+  // "이어서 풀기" 는 이 함수를 거치지 않으므로 풀던 세션의 순서는 그대로 유지된다.
   function startSession(opts) {
+    opts = Object.assign({}, opts, { qids: shuffled(opts.qids) });
     Store.get().active = Object.assign({ idx: 0, results: [], startedAt: Date.now() }, opts);
     Store.save();
     navigate('/quiz');
