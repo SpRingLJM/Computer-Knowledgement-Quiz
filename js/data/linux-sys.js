@@ -16,7 +16,7 @@ window.QUIZ_BANK.linux.push(
     explain: '`-L` 은 절대 크기, `-n` 은 LV 이름입니다. 생성된 장치는 `/dev/vg_data/lv_app` 과 `/dev/mapper/vg_data-lv_app` 두 경로로 접근합니다.',
     example: 'PE(physical extent) 단위(기본 4MiB)로 잘리므로 요청 크기가 살짝 올림될 수 있습니다. `lvs` 로 실제 크기를 확인합니다.' },
 
-  { diff: 'normal', type: 'short', q: '볼륨 그룹 `vg_data` 의 남은 공간을 **전부** 사용하는 논리 볼륨 `lv_app` 을 만드는 명령어는?', answer: 'lvcreate -l 100%FREE -n lv_app vg_data', accept: ['lvcreate -n lv_app -l 100%FREE vg_data', 'lvcreate -l +100%FREE -n lv_app vg_data', 'lvcreate --extents 100%FREE --name lv_app vg_data', 'sudo lvcreate -l 100%FREE -n lv_app vg_data'],
+  { diff: 'normal', type: 'short', q: '볼륨 그룹 `vg_data` 의 남은 공간을 **전부** 사용하는 논리 볼륨 `lv_app` 을 만드는 명령어는?', answer: 'lvcreate -l 100%FREE -n lv_app vg_data', accept: ['lvcreate -n lv_app -l 100%FREE vg_data', 'lvcreate --extents 100%FREE --name lv_app vg_data', 'sudo lvcreate -l 100%FREE -n lv_app vg_data'],
     explain: '`-L` 은 바이트 단위 크기, 소문자 `-l` 은 extent 수 또는 비율(`%FREE`, `%VG`, `%PVS`)입니다. 남은 공간을 딱 맞게 쓰려면 `-l 100%FREE` 가 정답입니다.',
     example: '`-L` 로 남은 용량을 직접 계산해 넣으면 PE 반올림 때문에 "insufficient free space" 로 실패하는 일이 잦습니다.' },
 
@@ -66,11 +66,11 @@ window.QUIZ_BANK.linux.push(
     example: 'dnsmasq 를 쓰면 `dhcp-boot=pxelinux.0,,10.0.0.5` 한 줄로 파일명과 서버를 동시에 지정할 수 있습니다.' },
 
   { diff: 'hard', type: 'short', q: 'BIOS(레거시) PXE 부팅에서 syslinux 패키지가 제공하는 네트워크 부트로더 파일명은?', answer: 'pxelinux.0', accept: ['pxelinux', 'lpxelinux.0'],
-    explain: '`pxelinux.0` 은 TFTP 로 받은 뒤 `pxelinux.cfg/` 아래 설정 파일(MAC 주소 → IP 16진수 → `default` 순으로 검색)을 읽어 커널과 initrd 를 로드합니다. UEFI 에서는 대신 `grubx64.efi` 나 `shimx64.efi` 를 씁니다.',
+    explain: '`pxelinux.0` 은 TFTP 로 받은 뒤 `pxelinux.cfg/` 아래 설정 파일(UUID → MAC 주소 → IP 16진수(뒷자리부터 줄여 가며) → `default` 순으로 검색)을 읽어 커널과 initrd 를 로드합니다. UEFI 에서는 대신 `grubx64.efi` 나 `shimx64.efi` 를 씁니다.',
     example: '특정 서버만 다른 이미지로 설치하려면 `pxelinux.cfg/01-aa-bb-cc-dd-ee-ff` 처럼 MAC 기반 설정 파일을 만듭니다.' },
 
-  { diff: 'hard', type: 'short', q: 'RHEL/Rocky 8 이상에서 PXE 부팅 커널 인자로 Kickstart 파일 위치를 지정하는 파라미터 이름은?', answer: 'inst.ks', accept: ['inst.ks=', 'ks', 'ks='],
-    explain: '`inst.ks=http://10.0.0.5/ks/web.cfg` 처럼 씁니다. 설치 프로그램(Anaconda)이 이 파일을 읽어 파티션·패키지·계정 설정을 무인으로 진행합니다. 예전 `ks=` 표기도 아직 인식됩니다.',
+  { diff: 'hard', type: 'short', q: 'RHEL/Rocky 8 이상에서 PXE 부팅 커널 인자로 Kickstart 파일 위치를 지정하는 파라미터 이름은?', answer: 'inst.ks', accept: ['inst.ks='],
+    explain: '`inst.ks=http://10.0.0.5/ks/web.cfg` 처럼 씁니다. 설치 프로그램(Anaconda)이 이 파일을 읽어 파티션·패키지·계정 설정을 무인으로 진행합니다. 예전 `ks=` 표기는 RHEL 8 에서 폐기 예정(deprecated)이었고 RHEL 9 부터는 지원이 제거되었으므로 `inst.ks=` 를 써야 합니다.',
     example: '함께 자주 쓰는 인자로 `inst.repo=`(설치 소스), `ip=dhcp`, `inst.text`(텍스트 모드) 가 있습니다. Ubuntu 는 Kickstart 대신 autoinstall(cloud-init) 을 씁니다.' },
 
   { diff: 'hard', type: 'short', q: 'RHEL 계열에서 설치 완료된 시스템의 설정을 재현할 수 있게 Anaconda 가 자동 생성해 두는 Kickstart 파일의 경로는?', answer: '/root/anaconda-ks.cfg', accept: ['anaconda-ks.cfg', '~/anaconda-ks.cfg'],
@@ -78,7 +78,7 @@ window.QUIZ_BANK.linux.push(
     example: '`ksvalidator anaconda-ks.cfg` 로 문법을 검사한 뒤 배포합니다. 파일 안에 root 비밀번호 해시가 들어 있으므로 저장소에 올릴 때 주의해야 합니다.' },
 
   /* ---------------- 부팅 · systemd ---------------- */
-  { diff: 'normal', type: 'short', q: 'Debian/Ubuntu 에서 `/etc/default/grub` 을 수정한 뒤 GRUB 설정 파일을 다시 생성하는 명령어는?', answer: 'update-grub', accept: ['sudo update-grub', 'grub-mkconfig -o /boot/grub/grub.cfg', 'grub2-mkconfig -o /boot/grub2/grub.cfg', 'sudo grub-mkconfig -o /boot/grub/grub.cfg'],
+  { diff: 'normal', type: 'short', q: 'Debian/Ubuntu 에서 `/etc/default/grub` 을 수정한 뒤 GRUB 설정 파일을 다시 생성하는 명령어는?', answer: 'update-grub', accept: ['sudo update-grub', 'grub-mkconfig -o /boot/grub/grub.cfg', 'sudo grub-mkconfig -o /boot/grub/grub.cfg'],
     explain: '`/boot/grub/grub.cfg` 는 직접 편집하지 않고 `/etc/default/grub` 과 `/etc/grub.d/` 로부터 생성합니다. `update-grub` 은 `grub-mkconfig -o /boot/grub/grub.cfg` 의 래퍼이고, RHEL 계열은 `grub2-mkconfig` 를 씁니다.',
     example: '커널 인자로 `net.ifnames=0`(인터페이스 이름 eth0 고정) 이나 `cgroup_enable=memory` 를 추가할 때 `GRUB_CMDLINE_LINUX` 를 고치고 이 명령을 실행합니다.' },
 
@@ -90,7 +90,7 @@ window.QUIZ_BANK.linux.push(
     explain: '`systemd-analyze` 는 커널·initrd·userspace 총 소요 시간을, `blame` 은 유닛별 시간을, `critical-chain` 은 의존성 사슬에서 어느 유닛이 병목인지 보여줍니다.',
     example: '`NetworkManager-wait-online.service` 나 `cloud-init` 이 수십 초를 잡아먹는 경우가 많고, 필요 없으면 `systemctl disable` 로 부팅을 크게 줄일 수 있습니다.' },
 
-  { diff: 'hard', type: 'short', q: 'RHEL 계열에서 커널 모듈이나 드라이버 설정을 바꾼 뒤 현재 커널의 initramfs 를 강제로 다시 만드는 명령어는?', answer: 'dracut -f', accept: ['dracut --force', 'sudo dracut -f', 'dracut -f /boot/initramfs-$(uname -r).img $(uname -r)', 'update-initramfs -u'],
+  { diff: 'hard', type: 'short', q: 'RHEL 계열에서 커널 모듈이나 드라이버 설정을 바꾼 뒤 현재 커널의 initramfs 를 강제로 다시 만드는 명령어는?', answer: 'dracut -f', accept: ['dracut --force', 'sudo dracut -f', 'dracut -f /boot/initramfs-$(uname -r).img $(uname -r)'],
     explain: 'initramfs 는 루트 파일시스템을 마운트하기 전 필요한 모듈(스토리지 드라이버, LVM, multipath, 암호화 등)을 담은 임시 루트입니다. 루트 디스크 관련 설정을 바꾸고 재생성하지 않으면 부팅 시 "unable to find root device" 로 멈춥니다. Debian 계열은 `update-initramfs -u` 입니다.',
     example: '멀티패스나 iSCSI 루트, 새 RAID 컨트롤러 드라이버를 추가했다면 반드시 `dracut -f` 후 재부팅합니다.' },
 
@@ -98,7 +98,7 @@ window.QUIZ_BANK.linux.push(
     explain: '`/proc/cmdline` 에는 GRUB 이 넘긴 `root=`, `ro`, `quiet`, `crashkernel=` 같은 인자가 그대로 들어 있습니다. GRUB 설정을 고쳤는데 반영이 안 됐는지 확인할 때 가장 먼저 봅니다.',
     example: '`grep -q selinux=0 /proc/cmdline` 으로 SELinux 가 커널 인자로 꺼져 있는지 스크립트에서 판단할 수 있습니다.' },
 
-  { diff: 'normal', type: 'short', q: '**직전 부팅** 세션의 systemd 저널 로그를 보는 명령어는?', answer: 'journalctl -b -1', accept: ['journalctl -b-1', 'journalctl --boot=-1', 'sudo journalctl -b -1', 'journalctl -b -1 -p err'],
+  { diff: 'normal', type: 'short', q: '**직전 부팅** 세션의 systemd 저널 로그를 보는 명령어는?', answer: 'journalctl -b -1', accept: ['journalctl -b-1', 'journalctl --boot=-1', 'sudo journalctl -b -1'],
     explain: '`-b` 는 현재 부팅, `-b -1` 은 바로 이전 부팅입니다. 갑자기 재부팅된 원인을 찾을 때 마지막 순간의 로그가 여기에 있습니다. 단, 저널이 영구 저장(persistent) 모드여야 이전 부팅 로그가 남습니다.',
     example: '`journalctl --list-boots` 로 저장된 부팅 목록을 확인하고, `journalctl -b -1 -p err` 로 에러만 추립니다.' },
 
@@ -114,7 +114,7 @@ window.QUIZ_BANK.linux.push(
     explain: '부팅 직후나 장애 점검 시 가장 먼저 보는 명령입니다. 실패한 유닛이 있으면 `systemctl status 유닛` 과 `journalctl -u 유닛` 으로 원인을 봅니다.',
     example: '`systemctl reset-failed` 로 실패 카운터를 초기화하면 `StartLimitBurst` 에 걸려 "start request repeated too quickly" 로 안 뜨던 서비스를 다시 시작할 수 있습니다.' },
 
-  { diff: 'easy', type: 'short', q: '서비스 `nginx` 를 부팅 시 자동 시작하도록 등록하면서 **지금 바로** 시작도 하는 명령어는?', answer: 'systemctl enable --now nginx', accept: ['sudo systemctl enable --now nginx', 'systemctl enable --now nginx.service', 'systemctl enable nginx && systemctl start nginx'],
+  { diff: 'easy', type: 'short', q: '서비스 `nginx` 를 부팅 시 자동 시작하도록 등록하면서 **지금 바로** 시작도 하는 명령어는?', answer: 'systemctl enable --now nginx', accept: ['sudo systemctl enable --now nginx', 'systemctl enable --now nginx.service', 'systemctl enable nginx && systemctl start nginx', 'systemctl --now enable nginx'],
     explain: '`enable` 은 심볼릭 링크를 만들어 부팅 시 시작하도록 등록만 하고 지금 시작하지는 않습니다. `--now` 를 붙이면 `start` 까지 한 번에 처리합니다. 반대는 `disable --now` 입니다.',
     example: '설치 스크립트에서 `systemctl start` 만 하고 `enable` 을 빼먹으면 재부팅 후 서비스가 안 올라옵니다. 점검 시 `systemctl is-enabled nginx` 로 확인합니다.' },
 
@@ -135,7 +135,7 @@ window.QUIZ_BANK.linux.push(
     explain: 'RHEL 계열 기본은 XFS, Debian 계열 기본은 ext4 입니다. XFS 는 대용량·병렬 I/O 에 강하지만 축소가 불가능하고, ext4 는 축소가 가능합니다. 이미 파일시스템이 있으면 `-f` 로 덮어써야 합니다.',
     example: '데이터베이스 볼륨은 XFS 를 많이 쓰고, 나중에 줄일 가능성이 있는 볼륨은 ext4 를 택합니다.' },
 
-  { diff: 'normal', type: 'short', q: '`/etc/fstab` 에 항목을 추가한 뒤, 재부팅 없이 아직 마운트 안 된 항목을 모두 마운트해 **설정 오류를 미리 검증**하는 명령어는?', answer: 'mount -a', accept: ['sudo mount -a', 'findmnt --verify', 'mount -av'],
+  { diff: 'normal', type: 'short', q: '`/etc/fstab` 에 항목을 추가한 뒤, 재부팅 없이 아직 마운트 안 된 항목을 모두 마운트해 **설정 오류를 미리 검증**하는 명령어는?', answer: 'mount -a', accept: ['sudo mount -a', 'mount -av'],
     explain: 'fstab 에 오타가 있으면 다음 부팅에서 emergency 모드로 떨어져 콘솔 없이는 복구가 어렵습니다. 반드시 `mount -a` 로 먼저 확인하고, `findmnt --verify` 는 마운트하지 않고 문법만 검사합니다.',
     example: '클라우드 VM 은 콘솔 접근이 번거로우므로 fstab 수정 후 `mount -a` 확인은 습관으로 만들어야 합니다.' },
 
@@ -159,7 +159,7 @@ window.QUIZ_BANK.linux.push(
     explain: '`vgextend` 는 새 PV 를 추가할 때 쓰고, 기존 PV 의 크기가 바뀌었을 때는 `pvresize` 입니다. 실행하면 `vgs` 의 `VFree` 가 늘어납니다.',
     example: 'SAN 에서 LUN 을 확장한 경우 `rescan` → (`growpart`) → `pvresize` → `lvextend -r` 4단계로 무중단 확장이 완료됩니다.' },
 
-  { diff: 'hard', type: 'short', q: '`/dev/sdb` 와 `/dev/sdc` 로 소프트웨어 RAID 1(미러) 배열 `/dev/md0` 을 만드는 명령어는?', answer: 'mdadm --create /dev/md0 --level=1 --raid-devices=2 /dev/sdb /dev/sdc', accept: ['mdadm -C /dev/md0 -l 1 -n 2 /dev/sdb /dev/sdc', 'mdadm --create /dev/md0 -l1 -n2 /dev/sdb /dev/sdc', 'mdadm --create /dev/md0 --level=mirror --raid-devices=2 /dev/sdb /dev/sdc', 'sudo mdadm --create /dev/md0 --level=1 --raid-devices=2 /dev/sdb /dev/sdc', 'mdadm --create /dev/md0 --level 1 --raid-devices 2 /dev/sdb /dev/sdc'],
+  { diff: 'hard', type: 'short', q: '`/dev/sdb` 와 `/dev/sdc` 로 소프트웨어 RAID 1(미러) 배열 `/dev/md0` 을 만드는 명령어는?', answer: 'mdadm --create /dev/md0 --level=1 --raid-devices=2 /dev/sdb /dev/sdc', accept: ['mdadm -C /dev/md0 -l 1 -n 2 /dev/sdb /dev/sdc', 'mdadm --create /dev/md0 -l1 -n2 /dev/sdb /dev/sdc', 'mdadm --create /dev/md0 --level=mirror --raid-devices=2 /dev/sdb /dev/sdc', 'sudo mdadm --create /dev/md0 --level=1 --raid-devices=2 /dev/sdb /dev/sdc', 'mdadm --create /dev/md0 --level 1 --raid-devices 2 /dev/sdb /dev/sdc', 'mdadm --create /dev/md0 --raid-devices=2 --level=1 /dev/sdb /dev/sdc', 'mdadm -C /dev/md0 -n 2 -l 1 /dev/sdb /dev/sdc'],
     explain: '`--level`(`-l`) 은 RAID 레벨, `--raid-devices`(`-n`) 는 구성 디스크 수입니다. 생성 직후 초기 동기화가 백그라운드로 진행되며 `/proc/mdstat` 에서 진행률을 봅니다. 재부팅 후에도 배열이 조립되게 `mdadm --detail --scan >> /etc/mdadm.conf` 로 설정을 남겨야 합니다.',
     example: '하드웨어 RAID 컨트롤러가 없는 서버나 클라우드 VM 에서 두 볼륨을 미러링해 단일 디스크 장애를 견디게 할 때 씁니다.' },
 
@@ -175,7 +175,7 @@ window.QUIZ_BANK.linux.push(
     explain: 'NFS 는 `서버:/경로` 형식으로 소스를 지정합니다. 클라이언트에 `nfs-utils`(RHEL) 또는 `nfs-common`(Debian) 패키지가 있어야 하며, 서버 측 export 목록은 `showmount -e nas01` 로 확인합니다.',
     example: 'fstab 에는 `nas01:/export/data /mnt/data nfs defaults,_netdev,nofail 0 0` 처럼 `_netdev` 를 붙여 네트워크가 뜬 뒤 마운트되게 합니다.' },
 
-  { diff: 'hard', type: 'short', q: 'iSCSI 타겟 서버 `10.0.0.5` 가 제공하는 타겟(IQN) 목록을 검색(discovery)하는 명령어는?', answer: 'iscsiadm -m discovery -t st -p 10.0.0.5', accept: ['iscsiadm -m discovery -t sendtargets -p 10.0.0.5', 'sudo iscsiadm -m discovery -t st -p 10.0.0.5', 'iscsiadm --mode discovery --type sendtargets --portal 10.0.0.5', 'iscsiadm -m discovery -t st -p 10.0.0.5:3260'],
+  { diff: 'hard', type: 'short', q: 'iSCSI 타겟 서버 `10.0.0.5` 가 제공하는 타겟(IQN) 목록을 검색(discovery)하는 명령어는?', answer: 'iscsiadm -m discovery -t st -p 10.0.0.5', accept: ['iscsiadm -m discovery -t sendtargets -p 10.0.0.5', 'sudo iscsiadm -m discovery -t st -p 10.0.0.5', 'iscsiadm --mode discovery --type sendtargets --portal 10.0.0.5', 'iscsiadm -m discovery -t st -p 10.0.0.5:3260', 'iscsiadm -m discovery -p 10.0.0.5 -t st'],
     explain: 'iSCSI 는 SCSI 명령을 TCP(기본 3260 포트)로 실어 나르는 블록 스토리지 프로토콜입니다. discovery 로 IQN 을 얻은 뒤 `iscsiadm -m node -T <IQN> -p 10.0.0.5 --login` 하면 `/dev/sdX` 로 디스크가 나타납니다.',
     example: '스토리지 어레이(PowerStore, Unity 등)의 iSCSI LUN 을 리눅스 호스트에 붙일 때 이 절차를 거치고, 다중 경로면 `multipath -ll` 로 경로를 확인합니다.' },
 
@@ -187,7 +187,7 @@ window.QUIZ_BANK.linux.push(
     explain: 'inode 는 파일 메타데이터 슬롯이며 파일시스템 생성 시 개수가 고정됩니다. 작은 파일 수백만 개(세션 파일, 캐시, 메일 큐)가 쌓이면 용량이 남아도 inode 가 고갈되어 "No space left on device" 가 납니다.',
     example: 'inode 고갈 시 `find /var/spool -xdev -type f | wc -l` 처럼 파일 수가 많은 디렉터리를 찾아 정리하거나, XFS 로 재생성(동적 inode) 을 검토합니다.' },
 
-  { diff: 'normal', type: 'short', q: '장치별 디스크 I/O 사용률(`%util`)과 대기 시간(`await`)을 1초 간격으로 확장 출력하는 명령어는?', answer: 'iostat -x 1', accept: ['iostat -xz 1', 'iostat -x', 'iostat -dx 1', 'iostat -xm 1'],
+  { diff: 'normal', type: 'short', q: '장치별 디스크 I/O 사용률(`%util`)과 대기 시간(`await`)을 1초 간격으로 확장 출력하는 명령어는?', answer: 'iostat -x 1', accept: ['iostat -xz 1', 'iostat -dx 1', 'iostat -xm 1'],
     explain: '`sysstat` 패키지의 `iostat -x` 는 장치별 `r/s`, `w/s`, `await`(요청당 평균 대기 ms), `%util` 을 보여줍니다. `%util` 이 100% 에 가깝고 `await` 가 수십 ms 이상이면 디스크가 병목입니다.',
     example: 'DB 서버 지연 시 `iostat -x 1` 에서 특정 LV 의 `await` 만 높다면 그 볼륨을 더 빠른 스토리지 티어로 옮기는 근거가 됩니다.' },
 
@@ -200,15 +200,15 @@ window.QUIZ_BANK.linux.push(
     explain: '`setenforce 0` 은 현재 세션에만 적용되고 재부팅하면 `/etc/selinux/config` 의 설정으로 돌아갑니다. 장애 원인이 SELinux 인지 빠르게 분리할 때 쓰고, 확인 후 `setenforce 1` 로 되돌립니다.',
     example: 'Permissive 로 바꿨더니 되면 SELinux 문제입니다. 그때 끄고 끝내지 말고 `ausearch` 로 거부 항목을 찾아 불리언이나 컨텍스트를 고치는 것이 올바른 해결입니다.' },
 
-  { diff: 'hard', type: 'short', q: '파일을 다른 곳에서 옮겨와 SELinux 컨텍스트가 어긋난 `/var/www` 디렉터리를 정책 기본값으로 **재귀 복원**하는 명령어는?', answer: 'restorecon -Rv /var/www', accept: ['restorecon -R /var/www', 'restorecon -rv /var/www', 'sudo restorecon -Rv /var/www', 'restorecon -R -v /var/www'],
+  { diff: 'hard', type: 'short', q: '파일을 다른 곳에서 옮겨와 SELinux 컨텍스트가 어긋난 `/var/www` 디렉터리를 정책 기본값으로 **재귀 복원**하는 명령어는?', answer: 'restorecon -Rv /var/www', accept: ['restorecon -R /var/www', 'restorecon -rv /var/www', 'sudo restorecon -Rv /var/www', 'restorecon -R -v /var/www', 'restorecon -vR /var/www'],
     explain: '`cp` 는 대상 위치의 기본 컨텍스트를 받지만 `mv` 는 원래 컨텍스트를 그대로 가져옵니다. 홈 디렉터리에서 `mv` 한 파일은 `user_home_t` 라 httpd 가 읽지 못하고, `restorecon` 이 `httpd_sys_content_t` 로 바로잡습니다.',
     example: '`ls -Z /var/www/html` 로 컨텍스트를 확인하고, 커스텀 경로에는 `semanage fcontext -a -t httpd_sys_content_t "/srv/web(/.*)?"` 로 규칙을 등록한 뒤 `restorecon` 합니다.' },
 
-  { diff: 'hard', type: 'short', q: 'SELinux Enforcing 상태에서 nginx/httpd 가 비표준 포트 **8081/tcp** 를 리스닝할 수 있게 허용하는 명령어는?', answer: 'semanage port -a -t http_port_t -p tcp 8081', accept: ['sudo semanage port -a -t http_port_t -p tcp 8081', 'semanage port --add --type http_port_t --proto tcp 8081', 'semanage port -a -t http_port_t -p tcp 8081/tcp'],
-    explain: 'SELinux 는 웹 서버 도메인이 바인드할 수 있는 포트를 `http_port_t` 타입으로 제한합니다(80, 443, 8080 등). 다른 포트는 `semanage port` 로 타입에 추가해야 하며, 이미 다른 타입에 속한 포트는 `-m`(modify) 을 씁니다.',
+  { diff: 'hard', type: 'short', q: 'SELinux Enforcing 상태에서 nginx/httpd 가 비표준 포트 **8081/tcp** 를 리스닝할 수 있게 허용하는 명령어는?', answer: 'semanage port -m -t http_port_t -p tcp 8081', accept: ['semanage port -m -p tcp -t http_port_t 8081'],
+    explain: 'SELinux 는 웹 서버 도메인이 바인드할 수 있는 포트를 `http_port_t` 타입으로 제한합니다(80, 443, 8008, 8443 등). 다른 포트는 `semanage port` 로 타입에 추가해야 하며, 이미 다른 타입에 속한 포트는 `-m`(modify) 을 씁니다.',
     example: '`semanage port -l | grep http_port_t` 로 현재 허용된 포트를 확인합니다. `semanage` 는 `policycoreutils-python-utils` 패키지에 들어 있습니다.' },
 
-  { diff: 'hard', type: 'short', q: '최근 발생한 SELinux 접근 거부(AVC) 기록을 감사 로그에서 검색하는 명령어는?', answer: 'ausearch -m avc -ts recent', accept: ['ausearch -m AVC -ts recent', 'ausearch -m avc', 'grep denied /var/log/audit/audit.log', 'sealert -a /var/log/audit/audit.log', 'ausearch -m avc -ts today', 'grep avc /var/log/audit/audit.log'],
+  { diff: 'hard', type: 'short', q: '최근 발생한 SELinux 접근 거부(AVC) 기록을 감사 로그에서 검색하는 명령어는?', answer: 'ausearch -m avc -ts recent', accept: ['ausearch -m AVC -ts recent', 'ausearch -m avc', 'grep denied /var/log/audit/audit.log', 'sealert -a /var/log/audit/audit.log', 'ausearch -m avc -ts today', 'grep avc /var/log/audit/audit.log', 'ausearch -ts recent -m avc'],
     explain: 'SELinux 거부는 `/var/log/audit/audit.log` 에 `type=AVC ... denied` 로 기록됩니다. `ausearch -m avc` 가 이를 구조적으로 검색하고, `sealert` 나 `audit2why` 는 원인과 해결 명령까지 제안합니다.',
     example: '`ausearch -m avc -ts recent | audit2allow -M mypol` 로 커스텀 정책 모듈을 만들 수 있지만, 그 전에 관련 불리언(`getsebool -a | grep httpd`)으로 해결되는지 먼저 봅니다.' },
 
@@ -221,7 +221,7 @@ window.QUIZ_BANK.linux.push(
     explain: '`modprobe` 는 의존 모듈까지 함께 로드하고, `insmod` 는 파일 경로를 직접 지정해 단일 모듈만 올립니다. 재부팅 후에도 유지하려면 `/etc/modules-load.d/*.conf` 에 모듈명을 적어 둡니다.',
     example: 'kubeadm 사전 준비: `echo br_netfilter > /etc/modules-load.d/k8s.conf && modprobe br_netfilter` 후 `sysctl net.bridge.bridge-nf-call-iptables=1` 을 설정합니다.' },
 
-  { diff: 'normal', type: 'short', q: '`/etc/sysctl.d/99-custom.conf` 에 `vm.swappiness=10` 을 적은 뒤, 재부팅 없이 **모든 sysctl 설정 파일**을 다시 읽어 적용하는 명령어는?', answer: 'sysctl --system', accept: ['sysctl -p /etc/sysctl.d/99-custom.conf', 'sudo sysctl --system'],
+  { diff: 'normal', type: 'short', q: '`/etc/sysctl.d/99-custom.conf` 에 `vm.swappiness=10` 을 적은 뒤, 재부팅 없이 **모든 sysctl 설정 파일**을 다시 읽어 적용하는 명령어는?', answer: 'sysctl --system', accept: ['sudo sysctl --system'],
     explain: '`sysctl -p` 는 인자 없이 쓰면 `/etc/sysctl.conf` 만 읽습니다. `/etc/sysctl.d/` 아래 파일까지 모두 적용하려면 `--system` 을 써야 합니다. `-w` 는 즉시 적용만 하고 파일에는 남기지 않습니다.',
     example: '`sysctl vm.swappiness` 로 적용 값을 확인합니다. 파일 이름 앞 숫자(99-)가 클수록 나중에 읽혀 우선합니다.' },
 
@@ -251,7 +251,7 @@ window.QUIZ_BANK.linux.push(
 
   { diff: 'normal', type: 'short', q: '사용자 `deploy` 의 crontab 을 root 권한으로 편집하는 명령어는?', answer: 'crontab -u deploy -e', accept: ['crontab -e -u deploy', 'sudo crontab -u deploy -e'],
     explain: '사용자별 crontab 은 `/var/spool/cron/` 아래에 저장되며 직접 편집하지 말고 `crontab` 명령으로 다룹니다. `-l` 은 조회, `-r` 은 전체 삭제(확인 없음!)입니다.',
-    example: '`crontab -r` 을 `-e` 로 잘못 치면 복구가 어렵습니다. 중요한 crontab 은 `crontab -l > backup.cron` 으로 백업하거나 `/etc/cron.d/` 에 파일로 두는 편이 안전합니다.' },
+    example: '`crontab -e` 를 치려다 `-r` 로 잘못 치면 복구가 어렵습니다. 중요한 crontab 은 `crontab -l > backup.cron` 으로 백업하거나 `/etc/cron.d/` 에 파일로 두는 편이 안전합니다.' },
 
   { diff: 'normal', type: 'short', q: '마운트된 모든 파일시스템을 트리 구조로 보여주는 명령어는?', answer: 'findmnt', accept: [],
     explain: '`findmnt` 는 `mount` 출력보다 읽기 쉽고 `findmnt /data` 처럼 특정 경로가 어느 장치에 어떤 옵션으로 마운트됐는지 바로 알려줍니다.',
@@ -267,7 +267,7 @@ window.QUIZ_BANK.linux.push(
     steps: [
       { hint: '# 1. /dev/sdb 를 물리 볼륨으로 초기화', answer: 'pvcreate /dev/sdb', accept: ['sudo pvcreate /dev/sdb'] },
       { hint: '# 2. 볼륨 그룹 vg_data 생성', answer: 'vgcreate vg_data /dev/sdb', accept: ['sudo vgcreate vg_data /dev/sdb'] },
-      { hint: '# 3. 남은 공간 전부를 쓰는 논리 볼륨 lv_data 생성', answer: 'lvcreate -l 100%FREE -n lv_data vg_data', accept: ['lvcreate -n lv_data -l 100%FREE vg_data', 'lvcreate -l +100%FREE -n lv_data vg_data', 'sudo lvcreate -l 100%FREE -n lv_data vg_data'] },
+      { hint: '# 3. 남은 공간 전부를 쓰는 논리 볼륨 lv_data 생성', answer: 'lvcreate -l 100%FREE -n lv_data vg_data', accept: ['lvcreate -n lv_data -l 100%FREE vg_data', 'sudo lvcreate -l 100%FREE -n lv_data vg_data'] },
       { hint: '# 4. XFS 파일시스템 생성', answer: 'mkfs.xfs /dev/vg_data/lv_data', accept: ['mkfs -t xfs /dev/vg_data/lv_data', 'mkfs.xfs /dev/mapper/vg_data-lv_data', 'sudo mkfs.xfs /dev/vg_data/lv_data'] },
       { hint: '# 5. 마운트 포인트를 만들고 마운트 (한 줄)', answer: 'mkdir -p /data && mount /dev/vg_data/lv_data /data', accept: ['mkdir /data && mount /dev/vg_data/lv_data /data', 'mkdir -p /data; mount /dev/vg_data/lv_data /data', 'mkdir -p /data && mount /dev/mapper/vg_data-lv_data /data'] },
     ],
@@ -310,10 +310,10 @@ window.QUIZ_BANK.linux.push(
   { diff: 'hard', type: 'task', q: '두 디스크로 RAID 1 을 구성하고, 재부팅 후에도 자동 조립되도록 설정을 남기세요.',
     scene: '# 상황: /dev/sdb, /dev/sdc 두 개의 빈 디스크가 있습니다.',
     steps: [
-      { hint: '# 1. /dev/sdb, /dev/sdc 로 RAID 1 배열 /dev/md0 생성', answer: 'mdadm --create /dev/md0 --level=1 --raid-devices=2 /dev/sdb /dev/sdc', accept: ['mdadm -C /dev/md0 -l 1 -n 2 /dev/sdb /dev/sdc', 'mdadm --create /dev/md0 -l1 -n2 /dev/sdb /dev/sdc', 'mdadm --create /dev/md0 --level 1 --raid-devices 2 /dev/sdb /dev/sdc', 'sudo mdadm --create /dev/md0 --level=1 --raid-devices=2 /dev/sdb /dev/sdc'] },
+      { hint: '# 1. /dev/sdb, /dev/sdc 로 RAID 1 배열 /dev/md0 생성', answer: 'mdadm --create /dev/md0 --level=1 --raid-devices=2 /dev/sdb /dev/sdc', accept: ['mdadm -C /dev/md0 -l 1 -n 2 /dev/sdb /dev/sdc', 'mdadm --create /dev/md0 -l1 -n2 /dev/sdb /dev/sdc', 'mdadm --create /dev/md0 --level 1 --raid-devices 2 /dev/sdb /dev/sdc', 'sudo mdadm --create /dev/md0 --level=1 --raid-devices=2 /dev/sdb /dev/sdc', 'mdadm --create /dev/md0 --raid-devices=2 --level=1 /dev/sdb /dev/sdc'] },
       { hint: '# 2. 배열 상태와 초기 동기화 진행률 확인', answer: 'cat /proc/mdstat', accept: ['mdadm --detail /dev/md0', 'mdadm -D /dev/md0', 'watch cat /proc/mdstat'] },
       { hint: '# 3. 배열 정의를 스캔해 /etc/mdadm.conf 에 추가 (Debian 은 /etc/mdadm/mdadm.conf)', answer: 'mdadm --detail --scan >> /etc/mdadm.conf', accept: ['mdadm --detail --scan >> /etc/mdadm/mdadm.conf', 'mdadm --detail --scan | tee -a /etc/mdadm.conf', 'mdadm -Ds >> /etc/mdadm.conf', 'mdadm --examine --scan >> /etc/mdadm.conf'] },
-      { hint: '# 4. 루트 디스크 관련이므로 initramfs 재생성 (RHEL 계열)', answer: 'dracut -f', accept: ['dracut --force', 'update-initramfs -u', 'sudo dracut -f'] },
+      { hint: '# 4. mdadm.conf 를 부팅 초기에 반영하도록 initramfs 재생성 (RHEL 계열)', answer: 'dracut -f', accept: ['dracut --force', 'update-initramfs -u', 'sudo dracut -f'] },
     ],
     explain: '`mdadm.conf` 가 없어도 대개 자동 조립되지만, 장치명이 `/dev/md127` 처럼 바뀌어 fstab 이 깨질 수 있습니다. 설정을 남기고 initramfs 에 반영해야 이름이 고정됩니다.',
     example: '동기화가 끝나기 전에도 배열을 포맷·마운트해 쓸 수 있습니다. 다만 동기화 중에는 I/O 성능이 떨어지므로 야간에 진행하는 편이 좋습니다.' },
@@ -324,7 +324,7 @@ window.QUIZ_BANK.linux.push(
     minKeywords: 4,
     model: '디스크나 파티션을 `pvcreate` 로 PV(물리 볼륨)로 만들고, 여러 PV 를 `vgcreate` 로 VG(볼륨 그룹)라는 하나의 저장 풀로 묶습니다. 그 풀에서 `lvcreate` 로 필요한 크기만큼 LV(논리 볼륨)를 잘라 파일시스템을 올립니다. 장점은 첫째, 물리 디스크 경계에 얽매이지 않아 여러 디스크를 합쳐 하나의 큰 볼륨을 만들 수 있고, 둘째, 서비스 중단 없이 `vgextend` 와 `lvextend -r` 로 온라인 확장이 가능하며, 셋째, 스냅샷으로 백업이나 업그레이드 전 복구 지점을 만들 수 있고, 넷째, `pvmove` 로 디스크를 무중단 교체할 수 있다는 점입니다. 파티션 방식은 크기를 바꾸려면 언마운트와 재파티션이 필요하고 디스크를 넘어서는 볼륨을 만들 수 없습니다.',
     explain: '"나중에 늘릴 수 있는가" 가 핵심입니다. 운영 서버의 데이터 볼륨을 LVM 없이 잡으면 용량 부족 시 서비스를 내려야 하므로, 대부분의 배포판 설치 기본값이 LVM 인 이유입니다.',
-    example: '클라우드에서도 EBS 볼륨 여러 개를 하나의 VG 로 묶어 IOPS 를 합산하거나, 온프레미스 SAN LUN 을 PV 로 써서 스토리지 마이그레이션을 `pvmove` 한 줄로 끝내는 식으로 활용합니다.' },
+    example: '클라우드에서도 EBS 볼륨 여러 개를 하나의 VG 로 묶고 스트라이프 LV(`lvcreate -i`)로 만들어 IOPS 를 합산하거나, 온프레미스 SAN LUN 을 PV 로 써서 스토리지 마이그레이션을 `pvmove` 한 줄로 끝내는 식으로 활용합니다.' },
 
   { diff: 'hard', type: 'essay', q: 'PXE 네트워크 부팅으로 서버 OS 가 자동 설치되기까지의 흐름을 단계별로 설명하세요.',
     keywords: [['DHCP', 'IP'], ['next-server', 'TFTP 서버', '부트 서버'], ['TFTP', '부트로더', 'pxelinux', 'grubx64'], ['커널', 'vmlinuz', 'initrd', 'initramfs'], ['HTTP', 'NFS', '설치 소스', 'repo'], ['Kickstart', 'preseed', 'autoinstall', '응답 파일', '무인'], ['UEFI', 'BIOS']],

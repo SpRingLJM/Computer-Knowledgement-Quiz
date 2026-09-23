@@ -25,7 +25,7 @@ window.QUIZ_BANK.container.push(
     steps: [
       { hint: '# 1. prod 네임스페이스의 파드 목록과 상태 확인', answer: 'kubectl get pods -n prod', accept: ['kubectl get pod -n prod', 'kubectl get po -n prod', 'kubectl -n prod get pods'] },
       { hint: '# 2. api-7d9f 파드의 상세 정보와 이벤트 확인', answer: 'kubectl describe pod api-7d9f -n prod', accept: ['kubectl -n prod describe pod api-7d9f', 'kubectl describe po api-7d9f -n prod'] },
-      { hint: '# 3. 직전에 죽은 컨테이너의 로그 확인 (현재 것이 아닌 이전 인스턴스)', answer: 'kubectl logs api-7d9f -n prod --previous', accept: ['kubectl logs -p api-7d9f -n prod', 'kubectl -n prod logs api-7d9f --previous', 'kubectl logs --previous api-7d9f -n prod'] },
+      { hint: '# 3. 직전에 죽은 컨테이너의 로그 확인 (현재 것이 아닌 이전 인스턴스)', answer: 'kubectl logs api-7d9f -n prod --previous', accept: ['kubectl logs -p api-7d9f -n prod', 'kubectl -n prod logs api-7d9f --previous', 'kubectl logs --previous api-7d9f -n prod', 'kubectl logs api-7d9f --previous -n prod'] },
     ],
     explain: 'CrashLoopBackOff 는 컨테이너가 떴다가 바로 죽기를 반복하는 상태라, 현재 로그를 보면 비어 있기 일쑤입니다. `--previous` 로 죽은 인스턴스의 로그를 봐야 진짜 오류가 나옵니다.',
     example: '`describe` 의 Events 섹션에는 이미지 풀 실패, 리소스 부족, 프로브 실패 같은 원인이 그대로 적혀 있습니다.' },

@@ -8,15 +8,15 @@ window.QUIZ_BANK.aws.push(
     example: '`aws ec2 describe-snapshots --owner-ids self --query "Snapshots[?VolumeId==\'vol-0def456\']"` 로 특정 볼륨의 스냅샷 이력을 조회합니다.' },
 
   { diff: 'normal', type: 'short', q: 'EBS 볼륨 `vol-0def456` 의 크기를 200GiB 로 온라인 확장하는 명령어는?', answer: 'aws ec2 modify-volume --volume-id vol-0def456 --size 200', accept: ['aws ec2 modify-volume --size 200 --volume-id vol-0def456'],
-    explain: 'EBS 는 인스턴스 실행 중에도 크기·타입·IOPS 를 늘릴 수 있습니다(줄이기는 불가). 확장 후 OS 에서 `growpart` → `resize2fs`/`xfs_growfs` 를 해야 실제 공간이 늘어나며, 한 번 수정하면 6시간 동안 다시 수정할 수 없습니다.',
+    explain: 'EBS 는 인스턴스 실행 중에도 크기·타입·IOPS 를 늘릴 수 있습니다(줄이기는 불가). 확장 후 OS 에서 `growpart` → `resize2fs`/`xfs_growfs` 를 해야 실제 공간이 늘어나며, 이전 수정이 완료되면 바로 다시 수정할 수 있으며, 볼륨당 24시간 안에 최대 4번까지 수정할 수 있습니다(2026년 1월 이전에는 수정 후 6시간을 기다려야 했습니다).',
     example: '`aws ec2 describe-volumes-modifications --volume-ids vol-0def456` 로 `optimizing` → `completed` 진행 상태를 확인한 뒤 OS 작업을 진행합니다.' },
 
   { diff: 'normal', type: 'short', q: 'EC2 인스턴스 `i-0abc123` 의 상태 검사(system/instance status check) 결과를 확인하는 명령어는?', answer: 'aws ec2 describe-instance-status --instance-ids i-0abc123', accept: ['aws ec2 describe-instance-status --instance-id i-0abc123', 'aws ec2 describe-instance-status --instance-ids i-0abc123 --include-all-instances'],
     explain: '`SystemStatus` 는 AWS 호스트 쪽(하드웨어·네트워크), `InstanceStatus` 는 OS 쪽(커널 패닉, 네트워크 설정) 문제를 뜻합니다. 시스템 상태 실패는 stop/start 로 다른 호스트로 옮기면 해결되는 경우가 많습니다.',
     example: '기본은 running 인스턴스만 나오므로, 중지된 것까지 보려면 `--include-all-instances` 를 붙입니다.' },
 
-  { diff: 'hard', type: 'short', q: '인스턴스 `i-0abc123` 의 시스템 로그(직렬 콘솔 출력)를 디코딩해 텍스트로 보는 명령어는?', answer: 'aws ec2 get-console-output --instance-id i-0abc123 --output text', accept: ['aws ec2 get-console-output --instance-id i-0abc123 --query Output --output text', 'aws ec2 get-console-output --instance-id i-0abc123 --latest --output text'],
-    explain: 'SSH 가 안 되는 인스턴스의 부팅 로그·커널 패닉·fstab 오류를 볼 수 있는 유일한 통로입니다. `--output text` 가 없으면 JSON 안에 이스케이프된 문자열로 나와 읽기 어렵습니다.',
+  { diff: 'hard', type: 'short', q: '인스턴스 `i-0abc123` 의 시스템 로그(직렬 콘솔 출력)를 디코딩해 텍스트로 보는 명령어는?', answer: 'aws ec2 get-console-output --instance-id i-0abc123 --output text', accept: ['aws ec2 get-console-output --instance-id i-0abc123 --query Output --output text', 'aws ec2 get-console-output --instance-id i-0abc123 --latest --output text', 'aws ec2 get-console-output --output text --instance-id i-0abc123'],
+    explain: 'SSH 가 안 되는 인스턴스의 부팅 로그·커널 패닉·fstab 오류를 볼 수 있는 대표적인 통로입니다(EC2 직렬 콘솔, `get-console-screenshot` 도 있습니다). `--output text` 가 없으면 JSON 안에 이스케이프된 문자열로 나와 읽기 어렵습니다.',
     example: '"Give root password for maintenance" 가 보이면 fstab 오류로 emergency 모드에 빠진 것입니다. 볼륨을 떼어 다른 인스턴스에 붙여 fstab 을 고칩니다.' },
 
   { diff: 'normal', type: 'short', q: 'S3 버킷 `my-bucket` 의 `logs/` 아래 객체 목록을 **하위 경로까지 재귀적으로**, 사람이 읽기 좋은 크기 단위로 출력하는 명령어는?', answer: 'aws s3 ls s3://my-bucket/logs/ --recursive --human-readable', accept: ['aws s3 ls s3://my-bucket/logs/ --recursive --human-readable --summarize', 'aws s3 ls --recursive --human-readable s3://my-bucket/logs/', 'aws s3 ls s3://my-bucket/logs --recursive --human-readable'],
@@ -27,7 +27,7 @@ window.QUIZ_BANK.aws.push(
     explain: '네 설정이 모두 true 여야 ACL 과 버킷 정책 어느 쪽으로도 공개가 불가능합니다. 2023년 이후 새 버킷은 기본으로 켜져 있지만, 오래된 버킷은 명시적으로 걸어야 합니다.',
     example: '`aws s3api get-public-access-block --bucket my-bucket` 으로 현재 상태를 감사하고, 계정 전체는 `aws s3control put-public-access-block --account-id ...` 로 겁니다.' },
 
-  { diff: 'hard', type: 'short', q: '버전 관리가 켜진 S3 버킷에서 실수로 삭제한 객체 `report.pdf` 의 **삭제 마커를 지워 복구**하려 합니다. 삭제 마커의 버전 ID 를 포함해 객체 버전 목록을 조회하는 명령어는?', answer: 'aws s3api list-object-versions --bucket my-bucket --prefix report.pdf', accept: ['aws s3api list-object-versions --bucket my-bucket --prefix report.pdf --query DeleteMarkers', 'aws s3api list-object-versions --bucket my-bucket --prefix report.pdf --query "DeleteMarkers[]"'],
+  { diff: 'hard', type: 'short', q: '버전 관리가 켜진 S3 버킷 `my-bucket` 에서 실수로 삭제한 객체 `report.pdf` 의 **삭제 마커를 지워 복구**하려 합니다. 삭제 마커의 버전 ID 를 포함해 객체 버전 목록을 조회하는 명령어는?', answer: 'aws s3api list-object-versions --bucket my-bucket --prefix report.pdf', accept: ['aws s3api list-object-versions --bucket my-bucket --prefix report.pdf --query DeleteMarkers', 'aws s3api list-object-versions --bucket my-bucket --prefix report.pdf --query "DeleteMarkers[]"', 'aws s3api list-object-versions --prefix report.pdf --bucket my-bucket'],
     explain: '버전 관리 버킷에서 삭제는 실제 삭제가 아니라 "삭제 마커" 버전을 추가하는 것입니다. `list-object-versions` 로 마커의 `VersionId` 를 찾아 `aws s3api delete-object --bucket my-bucket --key report.pdf --version-id <마커ID>` 로 마커를 지우면 이전 버전이 다시 보입니다.',
     example: '랜섬웨어나 오작동 스크립트가 객체를 대량 삭제해도 버전 관리 + MFA Delete 가 켜져 있으면 이 방법으로 되돌릴 수 있습니다.' },
 

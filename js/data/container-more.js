@@ -7,8 +7,8 @@ window.QUIZ_BANK.container.push(
     explain: '`docker system prune` 은 멈춘 컨테이너, 미사용 네트워크, dangling 이미지, 빌드 캐시를 지웁니다. `-a` 를 붙이면 컨테이너가 참조하지 않는 모든 이미지까지 지우므로 다음 배포 때 다시 pull 해야 합니다. 볼륨은 `--volumes` 를 명시해야 지워집니다.',
     example: 'CI 러너 디스크가 꽉 찼을 때 첫 조치입니다. `docker system df` 로 먼저 무엇이 얼마나 차지하는지 확인합니다.' },
 
-  { diff: 'normal', type: 'short', q: '컨테이너 `web` 의 IP 주소만 `--format` 으로 뽑아 출력하는 `docker inspect` 명령어는?', answer: 'docker inspect -f "{{.NetworkSettings.IPAddress}}" web', accept: ['docker inspect --format "{{.NetworkSettings.IPAddress}}" web', 'docker inspect -f {{.NetworkSettings.IPAddress}} web', 'docker inspect --format={{.NetworkSettings.IPAddress}} web', 'docker inspect -f "{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}" web'],
-    explain: '`docker inspect` 는 JSON 전체를 출력하므로 스크립트에서는 Go 템플릿 `--format` 으로 필드를 지정합니다. 사용자 정의 네트워크에 붙은 컨테이너는 `.NetworkSettings.Networks.<이름>.IPAddress` 아래에 있습니다.',
+  { diff: 'normal', type: 'short', q: '컨테이너 `web` 의 IP 주소만 `--format` 으로 뽑아 출력하는 `docker inspect` 명령어는?', answer: 'docker inspect -f "{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}" web', accept: ['docker inspect --format "{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}" web'],
+    explain: '`docker inspect` 는 JSON 전체를 출력하므로 스크립트에서는 Go 템플릿 `--format` 으로 필드를 지정합니다. IP 는 네트워크별로 `.NetworkSettings.Networks.<이름>.IPAddress` 아래에 있습니다. 예전의 최상위 `.NetworkSettings.IPAddress` 는 기본 bridge 에서만 값이 있었고 Docker Engine 29(API v1.52)에서 제거되었으므로 `range` 로 순회합니다.',
     example: '`docker inspect -f "{{.State.ExitCode}}" job1` 로 배치 컨테이너의 종료 코드를 확인해 CI 파이프라인의 성공/실패를 판정합니다.' },
 
   { diff: 'normal', type: 'short', q: '컨테이너 `api` 의 로그 중 최근 100줄만, 각 줄에 타임스탬프를 붙여 출력하는 명령어는?', answer: 'docker logs --tail 100 -t api', accept: ['docker logs -t --tail 100 api', 'docker logs --tail=100 -t api', 'docker logs -n 100 -t api', 'docker logs --timestamps --tail 100 api'],
@@ -27,13 +27,13 @@ window.QUIZ_BANK.container.push(
     explain: '`docker diff` 는 A(추가)/C(변경)/D(삭제) 로 컨테이너 쓰기 레이어의 변경을 보여줍니다. 컨테이너 안에 로그나 임시 파일이 쌓여 디스크를 채우는지, 누가 설정을 손댔는지 확인할 때 씁니다.',
     example: '`docker diff app | grep "^A /var/log"` 로 컨테이너 안에 로그가 쌓이는 것을 발견하면, 로그를 stdout 으로 내보내거나 볼륨으로 빼도록 고칩니다.' },
 
-  { diff: 'normal', type: 'short', q: '네임스페이스 `prod` 의 파드 `api-7d9f` 가 재시작을 반복합니다. **이전(크래시한) 컨테이너**의 로그를 보는 명령어는?', answer: 'kubectl logs api-7d9f -n prod --previous', accept: ['kubectl logs -p api-7d9f -n prod', 'kubectl logs api-7d9f -n prod -p', 'kubectl -n prod logs api-7d9f --previous', 'kubectl logs --previous api-7d9f -n prod', 'kubectl -n prod logs -p api-7d9f'],
+  { diff: 'normal', type: 'short', q: '네임스페이스 `prod` 의 파드 `api-7d9f` 가 재시작을 반복합니다. **이전(크래시한) 컨테이너**의 로그를 보는 명령어는?', answer: 'kubectl logs api-7d9f -n prod --previous', accept: ['kubectl logs -p api-7d9f -n prod', 'kubectl logs api-7d9f -n prod -p', 'kubectl -n prod logs api-7d9f --previous', 'kubectl logs --previous api-7d9f -n prod', 'kubectl -n prod logs -p api-7d9f', 'kubectl logs api-7d9f --previous -n prod'],
     explain: '`CrashLoopBackOff` 상태에서는 현재 컨테이너가 막 시작해 로그가 비어 있습니다. `--previous`(`-p`) 가 직전에 죽은 컨테이너의 로그를 보여주며, 대개 여기에 실제 에러(설정 누락, DB 연결 실패)가 있습니다.',
     example: '`kubectl describe pod` 의 `Last State: Terminated, Reason: OOMKilled` 와 함께 보면 메모리 한도 때문인지 애플리케이션 오류인지 구분됩니다.' },
 
   { diff: 'normal', type: 'short', q: '워커 노드 `worker-2` 에 새 파드가 스케줄되지 않도록 표시하되, 기존 파드는 그대로 두는 명령어는?', answer: 'kubectl cordon worker-2', accept: ['kubectl cordon node/worker-2', 'kubectl cordon nodes/worker-2'],
     explain: '`cordon` 은 노드를 `SchedulingDisabled` 로 만들 뿐 실행 중인 파드는 건드리지 않습니다. 파드까지 다른 노드로 내보내려면 `drain`, 다시 스케줄 가능하게 하려면 `uncordon` 입니다.',
-    example: '노드 점검 전 `cordon` → 트래픽이 빠지는 것을 확인 → `drain` 순으로 진행하면 갑작스러운 파드 이동을 피할 수 있습니다.' },
+    example: '노드 점검 전 `cordon` 으로 새 파드 유입을 먼저 막고, 준비가 되면 `drain` 으로 기존 파드를 PDB 를 지키며 다른 노드로 옮긴 뒤, 점검이 끝나면 `uncordon` 합니다.' },
 
   { diff: 'normal', type: 'short', q: '파드 `api-7d9f` 가 `Pending` 입니다. 스케줄되지 못한 이유(이벤트)를 확인하는 명령어는?', answer: 'kubectl describe pod api-7d9f', accept: ['kubectl describe pods api-7d9f', 'kubectl describe pod/api-7d9f', 'kubectl get events --field-selector involvedObject.name=api-7d9f', 'kubectl describe po api-7d9f'],
     explain: '`describe` 출력 맨 아래 `Events` 에 `FailedScheduling: 0/3 nodes are available: insufficient cpu` 처럼 이유가 나옵니다. 리소스 부족, 노드 셀렉터·테인트 불일치, PVC 바인딩 실패가 대표적입니다.',
@@ -64,8 +64,8 @@ window.QUIZ_BANK.container.push(
     scene: '# 상황: 네임스페이스 prod 의 파드 api-7d9f 가 계속 재시작됩니다.',
     steps: [
       { hint: '# 1. 파드의 상태·재시작 횟수·마지막 종료 사유(이벤트 포함) 확인', answer: 'kubectl describe pod api-7d9f -n prod', accept: ['kubectl -n prod describe pod api-7d9f', 'kubectl describe po api-7d9f -n prod', 'kubectl describe pod/api-7d9f -n prod'] },
-      { hint: '# 2. 직전에 크래시한 컨테이너의 로그 확인', answer: 'kubectl logs api-7d9f -n prod --previous', accept: ['kubectl logs -p api-7d9f -n prod', 'kubectl -n prod logs api-7d9f -p', 'kubectl -n prod logs api-7d9f --previous', 'kubectl logs --previous api-7d9f -n prod'] },
-      { hint: '# 3. 파드가 참조하는 ConfigMap·Secret·환경변수 등 스펙 전체를 YAML 로 확인', answer: 'kubectl get pod api-7d9f -n prod -o yaml', accept: ['kubectl -n prod get pod api-7d9f -o yaml', 'kubectl get po api-7d9f -n prod -o yaml', 'kubectl get pod api-7d9f -n prod -oyaml'] },
+      { hint: '# 2. 직전에 크래시한 컨테이너의 로그 확인', answer: 'kubectl logs api-7d9f -n prod --previous', accept: ['kubectl logs -p api-7d9f -n prod', 'kubectl -n prod logs api-7d9f -p', 'kubectl -n prod logs api-7d9f --previous', 'kubectl logs --previous api-7d9f -n prod', 'kubectl logs api-7d9f --previous -n prod'] },
+      { hint: '# 3. 파드가 참조하는 ConfigMap·Secret·환경변수 등 스펙 전체를 YAML 로 확인', answer: 'kubectl get pod api-7d9f -n prod -o yaml', accept: ['kubectl -n prod get pod api-7d9f -o yaml', 'kubectl get po api-7d9f -n prod -o yaml', 'kubectl get pod api-7d9f -n prod -oyaml', 'kubectl get pod api-7d9f -o yaml -n prod'] },
       { hint: '# 4. 설정을 고친 뒤 디플로이먼트 api 의 파드를 순차 재기동', answer: 'kubectl rollout restart deployment/api -n prod', accept: ['kubectl -n prod rollout restart deployment/api', 'kubectl rollout restart deploy/api -n prod', 'kubectl rollout restart deployment api -n prod'] },
     ],
     explain: 'CrashLoopBackOff 의 원인은 대개 세 가지입니다: 애플리케이션 오류(로그에 스택트레이스), OOMKilled(메모리 한도), 설정 누락(환경변수·Secret 이름 오타). `describe` 의 `Last State` 와 `--previous` 로그가 이를 구분해 줍니다.',

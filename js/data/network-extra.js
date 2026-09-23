@@ -44,7 +44,7 @@ window.QUIZ_BANK.network.push(
     example: '같은 서브넷 통신은 ARP+스위칭, 다른 서브넷은 게이트웨이(라우터)를 거칩니다.' },
 
   /* ---------------- NORMAL ---------------- */
-  { diff: 'normal', type: 'short', q: '`https://api.example.com` 에 요청하면서 DNS 를 무시하고 강제로 `10.0.1.5` 로 연결(호스트 헤더·SNI 는 유지)하는 curl 명령어는?', answer: 'curl --resolve api.example.com:443:10.0.1.5 https://api.example.com', accept: ['curl --resolve api.example.com:443:10.0.1.5 https://api.example.com/', 'curl -v --resolve api.example.com:443:10.0.1.5 https://api.example.com', 'curl --resolve "api.example.com:443:10.0.1.5" https://api.example.com'],
+  { diff: 'normal', type: 'short', q: '`https://api.example.com` 에 요청하면서 DNS 를 무시하고 강제로 `10.0.1.5` 로 연결(호스트 헤더·SNI 는 유지)하는 curl 명령어는?', answer: 'curl --resolve api.example.com:443:10.0.1.5 https://api.example.com', accept: ['curl --resolve api.example.com:443:10.0.1.5 https://api.example.com/', 'curl -v --resolve api.example.com:443:10.0.1.5 https://api.example.com', 'curl --resolve "api.example.com:443:10.0.1.5" https://api.example.com', 'curl https://api.example.com --resolve api.example.com:443:10.0.1.5'],
     explain: '`--resolve host:port:ip` 는 DNS 전환 전에 새 서버를 테스트하거나 로드밸런서 뒤 특정 인스턴스를 직접 검증할 때 씁니다. `-H "Host: ..."` 만으로는 TLS SNI 가 맞지 않습니다.',
     example: '블루/그린 전환 전 그린 환경을 실제 도메인·인증서로 검증.' },
   { diff: 'normal', type: 'mcq', q: 'TCP 연결 종료 시 `FIN_WAIT_2` 상태가 오래 남는 경우의 의미는?', options: ['서버가 SYN 을 못 받음', '우리 쪽은 FIN 을 보냈으나 상대가 자기 FIN 을 보내지 않음(half-close) — 상대 앱이 소켓을 닫지 않음', '라우팅 실패', '정상적으로 연결 유지 중'], answer: 1,
@@ -86,7 +86,7 @@ window.QUIZ_BANK.network.push(
   { diff: 'normal', type: 'mcq', q: 'CORS 오류 "No \'Access-Control-Allow-Origin\' header" 를 브라우저 콘솔에서 봤다. 어디를 고쳐야 하는가?', options: ['브라우저 설정', '프론트엔드 코드', 'API 서버(또는 그 앞의 프록시/게이트웨이)의 응답 헤더', 'DNS'], answer: 2,
     explain: 'CORS 는 서버가 허용 출처를 응답 헤더로 선언하는 브라우저 보안 정책입니다. `Access-Control-Allow-Origin`, 비단순 요청은 `OPTIONS` preflight 도 처리해야 합니다. curl 은 CORS 를 검사하지 않으므로 "curl 은 되는데 브라우저만 안 됨" 이 전형적 증상.',
     example: 'API Gateway/nginx 에서 preflight OPTIONS 에 204 와 허용 헤더를 반환하도록 설정.' },
-  { diff: 'normal', type: 'short', q: '`ss` 로 현재 ESTABLISHED 상태의 TCP 연결 중 목적지 포트가 443 인 것만 보는 명령어는?', answer: "ss -tan state established '( dport = :443 )'", accept: ['ss -tan state established "( dport = :443 )"', "ss -tn state established '( dport = :443 )'", 'ss -tan state established dport = :443', "ss -tan state established '( dport = :https )'"],
+  { diff: 'normal', type: 'short', q: '`ss` 로 현재 ESTABLISHED 상태의 TCP 연결 중 목적지 포트가 443 인 것만 보는 명령어는?', answer: "ss -tan state established '( dport = :443 )'", accept: ['ss -tan state established "( dport = :443 )"', "ss -tn state established '( dport = :443 )'", 'ss -tan state established dport = :443', "ss -tan state established '( dport = :https )'", "ss -ant state established '( dport = :443 )'", "ss -nat state established '( dport = :443 )'"],
     explain: 'ss 의 필터 문법: `state STATE`, `( dport = :PORT )`, `src`/`dst`. 따옴표는 셸의 괄호 해석을 막기 위함.',
     example: '서버가 외부 API 로 얼마나 많은 연결을 열고 있는지, 특정 업스트림으로의 연결 수 확인.' },
   { diff: 'normal', type: 'ox', q: 'UDP 는 연결 상태가 없으므로, 방화벽/NAT 은 UDP "세션" 을 마지막 패킷 이후 타임아웃(보통 30초~수분)으로 추적한다.', answer: true,
@@ -97,13 +97,13 @@ window.QUIZ_BANK.network.push(
     example: 'CI 에서 설정 변경 PR 마다 `nginx -t` 를 돌려 잘못된 설정 배포를 방지.' },
 
   /* ---------------- HARD ---------------- */
-  { diff: 'hard', type: 'short', q: 'HTTP/2 로 `https://example.com` 에 요청하고 사용된 프로토콜 버전을 출력하는 curl 명령어는?', answer: 'curl -sI --http2 https://example.com -w "%{http_version}\\n" -o /dev/null', accept: ['curl -s --http2 -o /dev/null -w "%{http_version}" https://example.com', "curl -s --http2 -o /dev/null -w '%{http_version}' https://example.com", 'curl -sI --http2 https://example.com', 'curl -I --http2 https://example.com', 'curl -s --http2 -w "%{http_version}" -o /dev/null https://example.com', 'curl --http2 -sI https://example.com'],
-    explain: '`-I` 출력의 첫 줄 `HTTP/2 200` 으로도 확인됩니다. `--http1.1`, `--http3` 로 강제. ALPN 협상 실패 시 HTTP/1.1 로 폴백됩니다.',
+  { diff: 'hard', type: 'short', q: 'HTTP/2 로 `https://example.com` 에 요청하고 사용된 프로토콜 버전을 출력하는 curl 명령어는?', answer: 'curl -sI --http2 https://example.com -w "%{http_version}\\n" -o /dev/null', accept: ['curl -s --http2 -o /dev/null -w "%{http_version}" https://example.com', "curl -s --http2 -o /dev/null -w '%{http_version}' https://example.com", 'curl -sI --http2 https://example.com', 'curl -I --http2 https://example.com', 'curl -s --http2 -w "%{http_version}" -o /dev/null https://example.com', 'curl --http2 -sI https://example.com', 'curl -sI --http2 -o /dev/null -w "%{http_version}\\n" https://example.com'],
+    explain: '`-I` 출력의 첫 줄 `HTTP/2 200` 으로도 확인됩니다. `--http1.1` 로 HTTP/1.1 강제, `--http3-only` 로 HTTP/3 강제(`--http3` 는 실패 시 이전 버전으로 폴백). ALPN 협상 실패 시 HTTP/1.1 로 폴백됩니다.',
     example: 'CDN/LB 가 HTTP/2 를 종단하고 오리진에는 1.1 로 가는 구성이 흔하므로, 오리진 직접 테스트와 구분.' },
   { diff: 'hard', type: 'mcq', q: '`tcpdump` 캡처에서 클라이언트 SYN 에 서버가 즉시 `RST` 로 응답한다. 의미는?', options: ['방화벽이 패킷을 드롭', '해당 포트에 리스닝 프로세스가 없음 (connection refused)', '네트워크 혼잡', 'TLS 오류'], answer: 1,
     explain: 'RST = 포트 닫힘(즉시 실패, "Connection refused"). 드롭 = 응답 없음(타임아웃). 이 차이로 "방화벽 문제" 와 "서비스가 안 떠 있음" 을 구분합니다.',
     example: '배포 직후 refused 면 앱이 아직 바인딩 전 또는 잘못된 포트, 타임아웃이면 SG/NACL.' },
-  { diff: 'hard', type: 'short', q: '리눅스에서 `eth0` 의 MTU 를 1400 으로 즉시 변경하는 iproute2 명령어는?', answer: 'ip link set dev eth0 mtu 1400', accept: ['ip link set eth0 mtu 1400', 'sudo ip link set dev eth0 mtu 1400', 'sudo ip link set eth0 mtu 1400'],
+  { diff: 'hard', type: 'short', q: '리눅스에서 `eth0` 의 MTU 를 1400 으로 즉시 변경하는 iproute2 명령어는?', answer: 'ip link set dev eth0 mtu 1400', accept: ['ip link set eth0 mtu 1400', 'sudo ip link set dev eth0 mtu 1400', 'sudo ip link set eth0 mtu 1400', 'ip link set mtu 1400 dev eth0'],
     explain: '재부팅 시 초기화되므로 netplan/NetworkManager/systemd-networkd 설정에 영구 반영해야 합니다. 터널(VXLAN 50바이트, IPsec ~60바이트) 오버헤드만큼 낮춥니다.',
     example: 'VPN/오버레이 네트워크에서 큰 응답이 멈출 때 MTU 를 낮춰 즉시 검증.' },
   { diff: 'hard', type: 'mcq', q: 'HSTS `preload` 를 설정한 도메인의 위험은?', options: ['성능 저하', '브라우저 내장 목록에 등록되어 HTTP 로 되돌리기가 사실상 불가능해지며, 서브도메인까지 HTTPS 를 강제', 'SEO 불이익', 'CDN 비용 증가'], answer: 1,
@@ -137,7 +137,7 @@ window.QUIZ_BANK.network.push(
     explain: '`ip addr add/del`. 재부팅 시 사라지므로 네트워크 설정에 반영. 클라우드에서는 ENI 에도 보조 프라이빗 IP 를 할당해야 트래픽이 도달합니다.',
     example: 'VIP 를 이용한 keepalived 장애 조치, 한 NIC 에 여러 서비스 IP 운영.' },
   { diff: 'hard', type: 'ox', q: 'SNI(Server Name Indication)는 TLS ClientHello 에 접속하려는 호스트명을 평문으로 담아 하나의 IP 에서 여러 도메인의 인증서를 서비스할 수 있게 하며, ECH(Encrypted Client Hello)가 이를 암호화하는 확장이다.', answer: true,
-    explain: 'SNI 덕분에 ALB/nginx 가 도메인별 인증서를 고릅니다. `curl` 은 URL 호스트명을 SNI 로 보내고, `openssl s_client` 는 `-servername` 이 필요합니다. SNI 가 없으면 기본 인증서가 반환되어 검증 실패.',
+    explain: 'SNI 덕분에 ALB/nginx 가 도메인별 인증서를 고릅니다. `curl` 은 URL 호스트명을 SNI 로 보내고, `openssl s_client` 는 1.1.1 부터 `-connect` 의 호스트명을 자동으로 SNI 로 보내지만, IP 로 접속하거나 구버전(1.1.0 이하)이면 `-servername` 이 필요합니다. SNI 가 없으면 기본 인증서가 반환되어 검증 실패.',
     example: 'IP 로 직접 `https://1.2.3.4` 접속 시 인증서 불일치가 나는 이유, 그리고 SNI 기반 방화벽 필터링의 원리.' },
   { diff: 'hard', type: 'mcq', q: '`traceroute` 결과 중간 홉들이 `* * *` 로 표시되지만 최종 목적지에는 도달한다. 해석은?', options: ['네트워크 장애', '해당 라우터들이 ICMP Time Exceeded 응답을 보내지 않도록 설정됨 — 경로 자체는 정상', '패킷 손실 100%', 'MTU 문제'], answer: 1,
     explain: '많은 라우터·클라우드 백본이 traceroute 응답을 억제합니다. 최종 홉이 응답하면 연결성은 정상. `mtr` 에서 특정 홉만 손실이고 이후 홉이 정상이면 그 홉의 ICMP 제한일 뿐입니다.',

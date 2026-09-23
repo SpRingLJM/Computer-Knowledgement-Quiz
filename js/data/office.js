@@ -6,7 +6,7 @@ window.QUIZ_BANK.office = [
     example: '긴 문서를 쓸 때는 문단을 하나 끝낼 때마다 무의식적으로 Ctrl+S를 누르는 사람이 많습니다.' },
 
   { diff: 'easy', type: 'short', q: '방금 한 작업을 되돌리는(실행 취소) 단축키는? (예: ctrl+z 형식)', answer: 'ctrl+z', accept: ['ctrl + z', 'control+z', 'cmd+z'],
-    explain: '`Ctrl+Z`는 실행 취소, `Ctrl+Y`(또는 `Ctrl+Shift+Z`)는 다시 실행입니다. 여러 단계를 거슬러 올라갈 수 있습니다.',
+    explain: '`Ctrl+Z`는 실행 취소, `Ctrl+Y`(프로그램에 따라 `Ctrl+Shift+Z`)는 다시 실행입니다. 여러 단계를 거슬러 올라갈 수 있습니다.',
     example: '실수로 표 전체를 지웠을 때 당황하지 말고 Ctrl+Z를 누르면 대개 복구됩니다.' },
 
   { diff: 'easy', type: 'mcq', q: '문서를 상대방이 어떤 컴퓨터에서 열어도 글꼴과 줄바꿈이 그대로 유지되도록 보낼 때 가장 적합한 형식은?', options: ['PDF', 'DOCX', 'HWP', 'TXT'], answer: 0,
@@ -120,7 +120,7 @@ window.QUIZ_BANK.office = [
 
   { diff: 'easy', type: 'short', q: '한 폴더 안의 파일을 모두 선택하는 단축키는? (예: ctrl+z 형식)', answer: 'ctrl+a', accept: ['ctrl + a', 'control+a', 'cmd+a'],
     explain: '`Ctrl+A`는 전체 선택입니다. 문서에서는 모든 글자, 파일 탐색기에서는 모든 파일이 선택됩니다.',
-    example: '전체 선택 후 `Ctrl+Shift+화살표`나 `Ctrl+클릭`으로 일부만 제외하면 원하는 묶음을 빠르게 만들 수 있습니다.' },
+    example: '전체 선택 후 `Ctrl` 키를 누른 채 빼고 싶은 파일을 클릭(`Ctrl+클릭`)해 선택을 해제하면 원하는 묶음을 빠르게 만들 수 있습니다.' },
 
   { diff: 'normal', type: 'mcq', q: '슬라이드 발표 자료를 만들 때 한 장에 담는 내용으로 가장 적절한 것은?', options: ['핵심 메시지 하나와 이를 뒷받침하는 최소한의 근거', '말할 내용을 문장으로 빠짐없이 적은 원고', '가능한 한 많은 표와 그래프', '참고 문헌 전체 목록'], answer: 0,
     explain: '슬라이드는 읽는 문서가 아니라 말하는 것을 돕는 화면입니다. 글이 많으면 청중이 읽느라 발표를 듣지 않습니다.',

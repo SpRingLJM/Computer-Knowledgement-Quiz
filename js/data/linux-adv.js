@@ -4,7 +4,7 @@ window.QUIZ_BANK.linux.push(
     scene: '# 상황: 웹 서버에서 "No space left on device" 오류가 발생했습니다.',
     steps: [
       { hint: '# 1. 마운트된 파일시스템별 사용량을 사람이 읽기 좋은 단위로 확인', answer: 'df -h', accept: ['df -h /', 'df --human-readable'] },
-      { hint: '# 2. /var/log 아래에서 용량을 많이 쓰는 디렉터리를 한 단계만 합산해 확인', answer: 'du -sh /var/log/*', accept: ['du -sh /var/log/*/', 'du -h -s /var/log/*'] },
+      { hint: '# 2. /var/log 아래에서 용량을 많이 쓰는 디렉터리를 한 단계만 합산해 확인', answer: 'du -sh /var/log/*', accept: ['du -sh /var/log/*/', 'du -h -s /var/log/*', 'du -hs /var/log/*'] },
       { hint: '# 3. 삭제하지 않고 app.log 파일의 내용만 비워 0바이트로 만들기', answer: 'truncate -s 0 /var/log/app.log', accept: ['> /var/log/app.log', ': > /var/log/app.log', 'truncate --size 0 /var/log/app.log', 'cat /dev/null > /var/log/app.log'] },
     ],
     explain: '`rm` 으로 로그를 지우면 프로세스가 파일 핸들을 잡고 있어 용량이 반환되지 않습니다. `truncate -s 0` 이나 리다이렉션으로 내용만 비워야 즉시 공간이 회수됩니다.',
@@ -15,7 +15,7 @@ window.QUIZ_BANK.linux.push(
     steps: [
       { hint: '# 1. 홈 디렉터리를 만들면서 deploy 사용자 생성', answer: 'useradd -m deploy', accept: ['adduser deploy', 'useradd --create-home deploy', 'useradd -m -s /bin/bash deploy'] },
       { hint: '# 2. deploy 사용자를 sudo 그룹에 추가 (기존 그룹 유지)', answer: 'usermod -aG sudo deploy', accept: ['usermod -a -G sudo deploy', 'gpasswd -a deploy sudo', 'usermod -aG wheel deploy'] },
-      { hint: '# 3. deploy 사용자가 속한 그룹 확인', answer: 'groups deploy', accept: ['id deploy', 'id -nG deploy'] },
+      { hint: '# 3. deploy 사용자가 속한 그룹 확인', answer: 'groups deploy', accept: ['id deploy', 'id -nG deploy', 'id -Gn deploy'] },
     ],
     explain: '`usermod` 에서 `-a` 를 빠뜨리고 `-G` 만 쓰면 기존 보조 그룹이 모두 날아갑니다. 이 한 글자 때문에 권한을 잃는 사고가 흔합니다.',
     example: 'RHEL 계열은 sudo 그룹 대신 `wheel` 을 씁니다. 배포 대상 OS를 먼저 확인해야 합니다.' },
@@ -23,8 +23,8 @@ window.QUIZ_BANK.linux.push(
   { diff: 'hard', type: 'task', q: '8080 포트를 이미 누가 쓰고 있어 서비스가 뜨지 않습니다. 찾아서 정리하세요.',
     scene: '# 상황: 애플리케이션 기동 시 "Address already in use" 오류가 납니다.',
     steps: [
-      { hint: '# 1. 8080 포트를 리스닝 중인 프로세스를 PID와 함께 확인', answer: 'ss -lntp | grep 8080', accept: ['ss -tlnp | grep 8080', 'lsof -i :8080', 'netstat -lntp | grep 8080', 'ss -lntp sport = :8080'] },
-      { hint: '# 2. 확인된 PID 4321 프로세스의 실행 명령줄 전체를 확인', answer: 'ps -p 4321 -o args', accept: ['ps -fp 4321', 'ps -ef | grep 4321', 'ps -p 4321 -o cmd', 'cat /proc/4321/cmdline'] },
+      { hint: '# 1. 8080 포트를 리스닝 중인 프로세스를 PID와 함께 확인', answer: 'ss -lntp | grep 8080', accept: ['ss -tlnp | grep 8080', 'lsof -i :8080', 'netstat -lntp | grep 8080', 'ss -lntp sport = :8080', 'ss -ltnp | grep 8080', 'ss -nltp | grep 8080'] },
+      { hint: '# 2. 확인된 PID 4321 프로세스의 실행 명령줄 전체를 확인', answer: 'ps -p 4321 -o args', accept: ['ps -fp 4321', 'ps -ef | grep 4321', 'ps -p 4321 -o cmd', 'cat /proc/4321/cmdline', 'ps -o args -p 4321'] },
       { hint: '# 3. 해당 프로세스에 정상 종료 시그널(SIGTERM) 전송', answer: 'kill 4321', accept: ['kill -15 4321', 'kill -TERM 4321', 'kill -SIGTERM 4321'] },
     ],
     explain: '`kill -9`(SIGKILL) 를 먼저 쓰면 프로세스가 정리 작업을 못 하고 죽어 임시 파일이나 락이 남습니다. SIGTERM 으로 먼저 시도하고 응답이 없을 때만 -9 를 씁니다.',
@@ -36,7 +36,7 @@ window.QUIZ_BANK.linux.push(
       { hint: '# 1. 변경된 유닛 파일을 systemd 가 다시 읽도록 설정 재적재', answer: 'systemctl daemon-reload', accept: ['sudo systemctl daemon-reload', 'systemctl daemon-reexec'] },
       { hint: '# 2. api 서비스 재시작', answer: 'systemctl restart api', accept: ['sudo systemctl restart api', 'systemctl restart api.service'] },
       { hint: '# 3. api 서비스의 현재 상태 확인', answer: 'systemctl status api', accept: ['sudo systemctl status api', 'systemctl status api.service', 'systemctl is-active api'] },
-      { hint: '# 4. api 서비스 로그를 최근 것부터 실시간으로 따라가며 확인', answer: 'journalctl -u api -f', accept: ['journalctl -fu api', 'journalctl -u api.service -f', 'journalctl -u api -f -n 100'] },
+      { hint: '# 4. api 서비스 로그를 최근 것부터 실시간으로 따라가며 확인', answer: 'journalctl -u api -f', accept: ['journalctl -fu api', 'journalctl -u api.service -f', 'journalctl -u api -f -n 100', 'journalctl -f -u api'] },
     ],
     explain: '유닛 파일을 고치고 `daemon-reload` 없이 restart 하면 예전 설정으로 뜹니다. 증상이 "분명히 고쳤는데 안 바뀐다" 로 나타나 시간을 많이 잡아먹습니다.',
     example: '부팅 시 자동 시작까지 원하면 `systemctl enable api` 를 따로 해야 하며, `enable --now` 로 한 번에 처리할 수 있습니다.' },

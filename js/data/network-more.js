@@ -20,7 +20,7 @@ window.QUIZ_BANK.network.push(
     example: '`dig +short @8.8.8.8 api.example.com` 과 `dig +short @1.1.1.1 api.example.com` 을 비교해 퍼블릭 리졸버별 전파 상태를 확인합니다.' },
 
   { diff: 'hard', type: 'short', q: '`api.example.com` 의 TLS 인증서 체인 전체와 검증 결과(Verify return code)를 보는 명령어는?', answer: 'openssl s_client -connect api.example.com:443 -servername api.example.com -showcerts', accept: ['openssl s_client -connect api.example.com:443 -showcerts', 'openssl s_client -showcerts -connect api.example.com:443 -servername api.example.com', 'openssl s_client -connect api.example.com:443 -servername api.example.com -showcerts </dev/null', 'echo | openssl s_client -connect api.example.com:443 -servername api.example.com -showcerts'],
-    explain: '`-showcerts` 는 서버가 보낸 중간 인증서까지 출력합니다. 브라우저는 되는데 curl/Java 에서 "unable to get local issuer certificate" 가 나면 서버가 중간 인증서를 빠뜨린 것이며, 이 출력의 체인 깊이(depth)로 확인합니다. `-servername` 은 SNI 로, 한 IP 에 여러 도메인이 있을 때 필수입니다.',
+    explain: '`-showcerts` 는 서버가 보낸 중간 인증서까지 출력합니다. 브라우저는 되는데 curl/Java 에서 "unable to get local issuer certificate" 가 나면 서버가 중간 인증서를 빠뜨린 것이며, 이 출력의 체인 깊이(depth)로 확인합니다. `-servername` 은 SNI 를 명시하는 옵션으로, OpenSSL 1.1.1 부터는 `-connect` 의 호스트명이 자동으로 쓰이지만 IP 로 접속하거나 구버전일 때는 필수입니다.',
     example: '마지막의 `Verify return code: 0 (ok)` 가 아니면 체인·만료·호스트명 불일치 중 하나입니다. `-CAfile` 로 사내 CA 를 지정해 재검증할 수 있습니다.' },
 
   { diff: 'hard', type: 'short', q: '인증서 파일 `server.crt` 의 만료일·주체(Subject)·SAN 을 출력하는 명령어는?', answer: 'openssl x509 -in server.crt -noout -text', accept: ['openssl x509 -in server.crt -text -noout', 'openssl x509 -noout -text -in server.crt', 'openssl x509 -in server.crt -noout -dates -subject -ext subjectAltName'],
@@ -31,7 +31,7 @@ window.QUIZ_BANK.network.push(
     explain: '`--permanent` 없이 추가하면 재부팅·reload 때 사라지고, `--permanent` 만 하면 reload 전까지 적용되지 않습니다. 둘 다 필요합니다. `--add-service=https` 는 미리 정의된 서비스 이름을 쓰는 방법입니다.',
     example: '`firewall-cmd --list-all` 로 현재 존(zone)의 열린 포트·서비스를 확인합니다. 다른 존에 인터페이스가 속해 있으면 규칙이 적용되지 않으니 `--get-active-zones` 도 함께 봅니다.' },
 
-  { diff: 'hard', type: 'short', q: 'iptables 의 `INPUT` 체인 규칙을 **번호와 패킷 카운터**를 포함해 나열하는 명령어는?', answer: 'iptables -L INPUT -n -v --line-numbers', accept: ['iptables -nvL INPUT --line-numbers', 'iptables -L INPUT -nv --line-numbers', 'iptables -vnL INPUT --line-numbers', 'sudo iptables -L INPUT -n -v --line-numbers', 'iptables -L -n -v --line-numbers'],
+  { diff: 'hard', type: 'short', q: 'iptables 의 `INPUT` 체인 규칙을 **번호와 패킷 카운터**를 포함해 나열하는 명령어는?', answer: 'iptables -L INPUT -n -v --line-numbers', accept: ['iptables -nvL INPUT --line-numbers', 'iptables -L INPUT -nv --line-numbers', 'iptables -vnL INPUT --line-numbers', 'sudo iptables -L INPUT -n -v --line-numbers', 'iptables -L -n -v --line-numbers', 'iptables -L INPUT -vn --line-numbers', 'iptables -L INPUT --line-numbers -n -v'],
     explain: '`-n` 은 DNS 역조회를 막아 빠르게, `-v` 는 pkts/bytes 카운터로 어느 규칙이 실제로 매칭되는지, `--line-numbers` 는 `iptables -D INPUT 3` 처럼 번호로 삭제할 수 있게 해 줍니다.',
     example: '연결이 안 될 때 `watch -n1 "iptables -nvL INPUT"` 으로 DROP 규칙의 카운터가 올라가는지 보면 방화벽이 원인인지 즉시 알 수 있습니다.' },
 
@@ -40,7 +40,7 @@ window.QUIZ_BANK.network.push(
     example: '`curl -w "@format.txt"` 처럼 포맷을 파일로 빼두면 매번 긴 문자열을 치지 않아도 됩니다. API 지연 원인을 "네트워크냐 서버냐" 로 나누는 가장 빠른 방법입니다.' },
 
   { diff: 'hard', type: 'short', q: '인터페이스 `eth0` 에서 **SYN 패킷만** 캡처하여 어느 IP 가 접속을 시도하는지 보는 `tcpdump` 명령어는?', answer: 'tcpdump -i eth0 "tcp[tcpflags] & tcp-syn != 0 and tcp[tcpflags] & tcp-ack == 0"', accept: ['tcpdump -i eth0 "tcp[tcpflags] == tcp-syn"', 'tcpdump -i eth0 tcp[tcpflags] == tcp-syn', 'tcpdump -i eth0 "tcp[13] == 2"', 'tcpdump -ni eth0 "tcp[tcpflags] == tcp-syn"', 'tcpdump -i eth0 -n "tcp[tcpflags] & (tcp-syn) != 0 and tcp[tcpflags] & (tcp-ack) == 0"'],
-    explain: '`tcp[tcpflags]` 는 TCP 헤더 13번째 바이트(플래그)입니다. SYN 만 켜진 패킷(`== tcp-syn`)이 새 연결 시도이고, SYN+ACK 는 응답입니다. `tcp[13] == 2` 는 같은 뜻의 원시 표기입니다.',
+    explain: '`tcp[tcpflags]` 는 TCP 헤더의 오프셋 13 바이트(0부터 셈, 플래그 바이트)입니다. SYN 만 켜진 패킷(`== tcp-syn`)이 새 연결 시도이고, SYN+ACK 는 응답입니다. `tcp[13] == 2` 는 같은 뜻의 원시 표기입니다.',
     example: 'SYN flood 의심 시 `tcpdump -ni eth0 "tcp[tcpflags] == tcp-syn" | awk \'{print $3}\' | cut -d. -f1-4 | sort | uniq -c | sort -rn | head` 로 상위 출발지 IP 를 뽑습니다.' },
 
   { diff: 'normal', type: 'short', q: '서버가 어떤 DNS 리졸버를 실제로 쓰는지(systemd-resolved 환경) 확인하는 명령어는?', answer: 'resolvectl status', accept: ['resolvectl', 'systemd-resolve --status', 'resolvectl dns'],
@@ -51,8 +51,8 @@ window.QUIZ_BANK.network.push(
     explain: '`ip route add 대상 via 게이트웨이 dev 인터페이스` 형식입니다. 재부팅하면 사라지므로 NetworkManager(`nmcli con mod eth1 +ipv4.routes "10.0.0.0/8 192.168.1.254"`)나 netplan 에 영구 등록합니다.',
     example: '두 개의 NIC 를 가진 서버에서 관리망과 서비스망을 분리할 때, 기본 게이트웨이는 하나만 두고 나머지 대역은 이런 정적 라우트로 보냅니다. `ip route get 10.1.2.3` 으로 어느 경로를 타는지 검증합니다.' },
 
-  { diff: 'hard', type: 'short', q: '연결 상태가 `TIME_WAIT` 인 소켓 수를 세는 명령어는?', answer: 'ss -tan state time-wait | wc -l', accept: ['ss -tan | grep -c TIME-WAIT', 'ss -s', 'ss -tan state time-wait | wc -l', 'netstat -tan | grep -c TIME_WAIT', 'ss -ant | grep TIME-WAIT | wc -l'],
-    explain: 'TIME_WAIT 은 능동적으로 연결을 닫은 쪽이 2MSL(보통 60초) 동안 포트를 붙잡는 정상 상태입니다. 수만 개가 쌓이면 임시 포트가 고갈되어 "Cannot assign requested address" 가 나며, 해결은 keep-alive/커넥션 풀 사용이고 `tcp_tw_reuse` 는 보조 수단입니다.',
+  { diff: 'hard', type: 'short', q: '연결 상태가 `TIME_WAIT` 인 소켓 수를 세는 명령어는?', answer: 'ss -tan state time-wait | wc -l', accept: ['ss -tan | grep -c TIME-WAIT', 'ss -s', 'ss -tan state time-wait | wc -l', 'netstat -tan | grep -c TIME_WAIT', 'ss -ant | grep TIME-WAIT | wc -l', 'ss -ant state time-wait | wc -l'],
+    explain: '`wc -l` 은 ss 의 헤더 한 줄도 세므로 정확한 값은 1을 빼거나 `ss -Htan ...`(H: no-header)을 씁니다. TIME_WAIT 은 능동적으로 연결을 닫은 쪽이 2MSL(보통 60초) 동안 포트를 붙잡는 정상 상태입니다. 수만 개가 쌓이면 임시 포트가 고갈되어 "Cannot assign requested address" 가 나며, 해결은 keep-alive/커넥션 풀 사용이고 `tcp_tw_reuse` 는 보조 수단입니다.',
     example: '프록시나 API 게이트웨이처럼 백엔드로 짧은 연결을 많이 여는 서버에서 흔한 증상입니다. `ss -s` 의 `timewait` 값으로 추세를 봅니다.' },
 
   /* ---------------- 과제형 ---------------- */

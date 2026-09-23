@@ -35,6 +35,11 @@ const Quiz = (() => {
   }
   const byId = Object.fromEntries(all.map(q => [q.id, q]));
 
+  // 정답 명령어 풀이(js/data/parts-*.js)를 문제에 연결.
+  // short/mcq: { parts: [[조각, 설명], ...], order }, task: { steps: [{ parts, order }, ...] }
+  const PARTS = window.QUIZ_PARTS || {};
+  for (const [id, b] of Object.entries(PARTS)) if (byId[id]) byId[id].breakdown = b;
+
   /* ---------- 시드 난수 (같은 날 + 같은 설정 = 같은 세트) ---------- */
   function hashStr(s) {
     let h = 2166136261;

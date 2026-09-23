@@ -23,11 +23,11 @@ window.QUIZ_BANK.sql.push(
     explain: 'MVCC 때문에 UPDATE/DELETE 된 옛 행(데드 튜플)은 VACUUM 이 회수하기 전까지 공간을 차지합니다. autovacuum 이 있지만 대량 삭제 후엔 수동 실행이 빠릅니다. `VACUUM FULL` 은 테이블을 통째로 재작성하며 배타 락을 잡으므로 운영 중엔 피합니다.',
     example: '`SELECT relname, n_dead_tup FROM pg_stat_user_tables ORDER BY n_dead_tup DESC` 로 데드 튜플이 많은 테이블을 찾아 우선 처리합니다.' },
 
-  { diff: 'hard', type: 'short', q: 'PostgreSQL 에서 `orders` 테이블의 **한 번도 사용되지 않은 인덱스**를 찾는 SQL 은?', answer: "SELECT indexrelname, idx_scan FROM pg_stat_user_indexes WHERE relname = 'orders' AND idx_scan = 0", accept: ['select indexrelname, idx_scan from pg_stat_user_indexes where relname = orders and idx_scan = 0', "select * from pg_stat_user_indexes where relname = 'orders' and idx_scan = 0", 'select * from pg_stat_user_indexes where relname = orders and idx_scan = 0', "SELECT indexrelname FROM pg_stat_user_indexes WHERE relname = 'orders' AND idx_scan = 0"],
+  { diff: 'hard', type: 'short', q: 'PostgreSQL 에서 `orders` 테이블의 **한 번도 사용되지 않은 인덱스**를 찾는 SQL 은?', answer: "SELECT indexrelname, idx_scan FROM pg_stat_user_indexes WHERE relname = 'orders' AND idx_scan = 0", accept: ['select indexrelname, idx_scan from pg_stat_user_indexes where relname = orders and idx_scan = 0', "select * from pg_stat_user_indexes where relname = 'orders' and idx_scan = 0", 'select * from pg_stat_user_indexes where relname = orders and idx_scan = 0', "SELECT indexrelname FROM pg_stat_user_indexes WHERE relname = 'orders' AND idx_scan = 0", "SELECT indexrelname, idx_scan FROM pg_stat_user_indexes WHERE idx_scan = 0 AND relname = 'orders'"],
     explain: '`pg_stat_user_indexes.idx_scan` 은 인덱스가 스캔에 쓰인 횟수입니다. 0 인 인덱스는 쓰기 비용만 발생시키므로 삭제 후보입니다. 단, 통계 초기화 이후 기간과 유니크 제약용 인덱스인지는 확인해야 합니다.',
     example: '쓰기 지연이 큰 테이블에서 미사용 인덱스 서너 개를 지우는 것만으로 INSERT 처리량이 눈에 띄게 개선되는 경우가 있습니다.' },
 
-  { diff: 'normal', type: 'short', q: 'PostgreSQL 데이터베이스 `shop` 을 커스텀 포맷(압축, 선택 복원 가능)으로 `shop.dump` 파일에 백업하는 셸 명령어는?', answer: 'pg_dump -Fc shop -f shop.dump', accept: ['pg_dump -Fc -f shop.dump shop', 'pg_dump --format=custom shop -f shop.dump', 'pg_dump -Fc shop > shop.dump', 'pg_dump -U postgres -Fc shop -f shop.dump', 'pg_dump -Fc -d shop -f shop.dump'],
+  { diff: 'normal', type: 'short', q: 'PostgreSQL 데이터베이스 `shop` 을 커스텀 포맷(압축, 선택 복원 가능)으로 `shop.dump` 파일에 백업하는 셸 명령어는?', answer: 'pg_dump -Fc shop -f shop.dump', accept: ['pg_dump -Fc -f shop.dump shop', 'pg_dump --format=custom shop -f shop.dump', 'pg_dump -Fc shop > shop.dump', 'pg_dump -U postgres -Fc shop -f shop.dump', 'pg_dump -Fc -d shop -f shop.dump', 'pg_dump -f shop.dump -Fc shop'],
     explain: '`-Fc`(custom) 는 압축되고 `pg_restore` 로 테이블 단위 선택 복원·병렬 복원(`-j`)이 가능합니다. 평문 SQL(`-Fp`) 은 `psql` 로 넣지만 병렬·선택 복원이 안 됩니다.',
     example: '복원: `pg_restore -d shop_new -j 4 shop.dump`. 운영 DB 스냅샷을 개발 환경에 부을 때 특정 대용량 로그 테이블만 `-L` 목록으로 제외할 수 있습니다.' },
 
@@ -37,7 +37,7 @@ window.QUIZ_BANK.sql.push(
 
   { diff: 'hard', type: 'short', q: '`orders` 테이블에 `status` 컬럼을 추가하되 기본값 `pending` 을 주고 NULL 을 허용하지 않는 DDL 은?', answer: "ALTER TABLE orders ADD COLUMN status VARCHAR(20) NOT NULL DEFAULT 'pending'", accept: ['alter table orders add column status varchar(20) not null default pending', "ALTER TABLE orders ADD status VARCHAR(20) NOT NULL DEFAULT 'pending'", 'alter table orders add status varchar(20) not null default pending', "alter table orders add column status varchar(20) default 'pending' not null", 'alter table orders add column status varchar(20) default pending not null'],
     explain: '`NOT NULL` 컬럼을 추가하려면 기존 행을 채울 `DEFAULT` 가 필요합니다. PostgreSQL 11+ 와 MySQL 8 은 상수 기본값이면 테이블을 재작성하지 않고 메타데이터만 바꿔 대용량 테이블에서도 즉시 끝납니다.',
-    example: '기본값이 `now()` 같은 비상수면 테이블 전체를 다시 쓰므로, 운영 중엔 NULL 허용으로 추가 → 배치로 채움 → `SET NOT NULL` 3단계로 나눠 락 시간을 줄입니다.' },
+    example: '기본값이 `clock_timestamp()`·`gen_random_uuid()` 같은 volatile 함수면(PG 기준. `now()` 는 실행 시점 값 하나로 고정되어 즉시 처리됨) 테이블 전체를 다시 쓰므로, 운영 중엔 NULL 허용으로 추가 → 배치로 채움 → `SET NOT NULL` 3단계로 나눠 락 시간을 줄입니다.' },
 
   { diff: 'hard', type: 'short', q: 'PostgreSQL 에서 세션의 트랜잭션 격리 수준을 `SERIALIZABLE` 로 시작하는 SQL 은?', answer: 'BEGIN ISOLATION LEVEL SERIALIZABLE', accept: ['begin isolation level serializable', 'START TRANSACTION ISOLATION LEVEL SERIALIZABLE', 'start transaction isolation level serializable', 'BEGIN TRANSACTION ISOLATION LEVEL SERIALIZABLE'],
     explain: 'PostgreSQL 기본은 READ COMMITTED 입니다. SERIALIZABLE 은 동시 트랜잭션이 순차 실행과 같은 결과를 보장하되, 충돌 시 `could not serialize access` 오류로 한쪽이 실패하므로 애플리케이션이 재시도해야 합니다.',
@@ -67,7 +67,7 @@ window.QUIZ_BANK.sql.push(
   { diff: 'hard', type: 'essay', q: '인덱스가 있는데도 쿼리가 인덱스를 타지 않고 전체 스캔(Seq Scan / Full Table Scan)을 합니다. 가능한 원인과 확인 방법을 설명하세요.',
     keywords: [['통계', 'ANALYZE', '낡은'], ['선택도', '많은 행', '비율', '대부분'], ['함수', '연산', '컬럼 가공', 'WHERE lower('], ['타입', '형 변환', '암시적', 'varchar', 'int'], ['복합 인덱스', '선두 컬럼', '순서', 'leftmost'], ['LIKE', '와일드카드', '%로 시작'], ['EXPLAIN', '실행 계획'], ['작은 테이블', '옵티마이저', '비용']],
     minKeywords: 4,
-    model: '먼저 `EXPLAIN ANALYZE` 로 추정 행 수와 실제 행 수를 비교합니다. 크게 다르면 통계가 낡은 것이니 `ANALYZE` 로 갱신합니다. 조건이 테이블의 상당 비율(수십 % 이상)을 반환하면 옵티마이저가 인덱스보다 순차 스캔이 싸다고 판단하는 것이 정상입니다. `WHERE lower(email) = ...` 처럼 컬럼에 함수를 씌우거나, `WHERE varchar_col = 123` 처럼 타입이 달라 암시적 형 변환이 일어나면 인덱스를 쓸 수 없으므로 식 인덱스를 만들거나 타입을 맞춥니다. 복합 인덱스 `(a, b)` 는 `WHERE b = ?` 만으로는 쓰이지 않으니 선두 컬럼 조건이 있는지 확인하고, `LIKE \'%abc\'` 처럼 와일드카드로 시작하는 패턴도 B-tree 인덱스를 못 탑니다. 테이블이 아주 작으면 인덱스보다 스캔이 빠른 것이 맞습니다.',
+    model: '먼저 `EXPLAIN ANALYZE` 로 추정 행 수와 실제 행 수를 비교합니다. 크게 다르면 통계가 낡은 것이니 `ANALYZE` 로 갱신합니다. 조건이 테이블의 상당 비율(수십 % 이상)을 반환하면 옵티마이저가 인덱스보다 순차 스캔이 싸다고 판단하는 것이 정상입니다. `WHERE lower(email) = ...` 처럼 컬럼에 함수를 씌우거나, `WHERE varchar_col = 123` 처럼 타입이 달라 암시적 형 변환이 일어나면(MySQL 기준, PostgreSQL 은 이 경우 타입 오류) 인덱스를 쓸 수 없으므로 식 인덱스를 만들거나 타입을 맞춥니다. 복합 인덱스 `(a, b)` 는 `WHERE b = ?` 만으로는 쓰이지 않으니 선두 컬럼 조건이 있는지 확인하고, `LIKE \'%abc\'` 처럼 와일드카드로 시작하는 패턴도 B-tree 인덱스를 못 탑니다. 테이블이 아주 작으면 인덱스보다 스캔이 빠른 것이 맞습니다.',
     explain: '"인덱스가 있으면 무조건 쓴다" 가 아니라 옵티마이저가 비용을 비교합니다. 인덱스를 못 쓰는 경우(함수·형 변환·선두 컬럼 누락)와 안 쓰는 게 나은 경우(선택도 낮음·작은 테이블)를 구분하는 것이 핵심입니다.',
     example: '`WHERE phone = 01012345678` (숫자) 로 `phone VARCHAR` 컬럼을 조회해 MySQL 이 전체 스캔을 하던 사례가 전형적입니다. 따옴표 하나로 1초가 1ms 가 됩니다.' },
 );

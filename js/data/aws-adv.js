@@ -4,7 +4,7 @@ window.QUIZ_BANK.aws.push(
     scene: '# 상황: 방금 생성한 인스턴스의 상태와 접속 주소를 확인해야 합니다.',
     steps: [
       { hint: '# 1. 현재 CLI 자격 증명이 어떤 계정·사용자인지 확인', answer: 'aws sts get-caller-identity', accept: ['aws sts get-caller-identity --output json'] },
-      { hint: '# 2. 실행 중인 EC2 인스턴스 목록 조회', answer: 'aws ec2 describe-instances', accept: ['aws ec2 describe-instances --filters Name=instance-state-name,Values=running'] },
+      { hint: '# 2. EC2 인스턴스 목록 조회', answer: 'aws ec2 describe-instances', accept: ['aws ec2 describe-instances --filters Name=instance-state-name,Values=running'] },
       { hint: '# 3. 인스턴스 i-0abc123 의 상태만 조회', answer: 'aws ec2 describe-instance-status --instance-ids i-0abc123', accept: ['aws ec2 describe-instance-status --instance-id i-0abc123'] },
     ],
     explain: '작업 전 `get-caller-identity` 로 어느 계정에 붙어 있는지 확인하는 습관이 중요합니다. 프로파일을 착각해 운영 계정에 명령을 날리는 사고가 잦습니다.',
@@ -15,7 +15,7 @@ window.QUIZ_BANK.aws.push(
     steps: [
       { hint: '# 1. 내 계정의 S3 버킷 목록 확인', answer: 'aws s3 ls', accept: ['aws s3api list-buckets'] },
       { hint: '# 2. 로컬 build 디렉터리 전체를 s3://my-assets 로 동기화', answer: 'aws s3 sync build/ s3://my-assets', accept: ['aws s3 sync ./build s3://my-assets', 'aws s3 sync build s3://my-assets'] },
-      { hint: '# 3. s3://my-assets 에 올라간 객체 목록을 사람이 읽기 좋은 크기 단위로 확인', answer: 'aws s3 ls s3://my-assets --human-readable', accept: ['aws s3 ls s3://my-assets --human-readable --summarize', 'aws s3 ls s3://my-assets --recursive --human-readable'] },
+      { hint: '# 3. s3://my-assets 에 올라간 객체 목록을 사람이 읽기 좋은 크기 단위로 확인', answer: 'aws s3 ls s3://my-assets --human-readable', accept: ['aws s3 ls s3://my-assets --human-readable --summarize', 'aws s3 ls s3://my-assets --recursive --human-readable', 'aws s3 ls --human-readable s3://my-assets'] },
     ],
     explain: '`sync` 는 변경된 파일만 전송하므로 `cp --recursive` 보다 배포에 적합합니다. `--delete` 를 붙이면 원본에 없는 객체를 지워 완전히 일치시킵니다.',
     example: '`--delete` 를 잘못 쓰면 버킷의 다른 파일까지 사라집니다. 먼저 `--dryrun` 으로 무엇이 지워질지 확인하는 것이 안전합니다.' },
@@ -24,7 +24,7 @@ window.QUIZ_BANK.aws.push(
     scene: '# 상황: 운영 계정의 ReadOnly 역할을 맡아 리소스를 확인해야 합니다.',
     steps: [
       { hint: '# 1. arn:aws:iam::123456789012:role/ReadOnly 역할을 audit 세션 이름으로 위임받기', answer: 'aws sts assume-role --role-arn arn:aws:iam::123456789012:role/ReadOnly --role-session-name audit', accept: ['aws sts assume-role --role-session-name audit --role-arn arn:aws:iam::123456789012:role/ReadOnly'] },
-      { hint: '# 2. 현재 자격 증명이 바뀌었는지 확인', answer: 'aws sts get-caller-identity', accept: ['aws sts get-caller-identity --output text'] },
+      { hint: '# 2. 반환된 AccessKeyId·SecretAccessKey·SessionToken 을 환경변수로 내보낸 뒤, 현재 자격 증명이 바뀌었는지 확인', answer: 'aws sts get-caller-identity', accept: ['aws sts get-caller-identity --output text'] },
       { hint: '# 3. CloudWatch 로그 그룹 목록 조회', answer: 'aws logs describe-log-groups', accept: ['aws logs describe-log-groups --output table'] },
     ],
     explain: 'assume-role 은 만료 시간이 있는 임시 자격 증명을 발급합니다. 장기 액세스 키를 여러 계정에 뿌리는 대신 역할 위임을 쓰는 것이 권장 구조입니다.',
@@ -34,7 +34,7 @@ window.QUIZ_BANK.aws.push(
     scene: '# 상황: 이번 달 청구 금액이 예상의 두 배입니다.',
     steps: [
       { hint: '# 1. 서비스별 미사용 상태로 남아 있는 탄력적 IP 확인', answer: 'aws ec2 describe-addresses', accept: ['aws ec2 describe-addresses --output table'] },
-      { hint: '# 2. 연결되지 않은 채 남아 있는 EBS 볼륨 조회', answer: 'aws ec2 describe-volumes --filters Name=status,Values=available', accept: ['aws ec2 describe-volumes --filters Name=status,Values=available --output table', 'aws ec2 describe-volumes'] },
+      { hint: '# 2. 연결되지 않은 채 남아 있는 EBS 볼륨 조회', answer: 'aws ec2 describe-volumes --filters Name=status,Values=available', accept: ['aws ec2 describe-volumes --filters Name=status,Values=available --output table'] },
       { hint: '# 3. 오래된 스냅샷 확인 (내 계정 소유분)', answer: 'aws ec2 describe-snapshots --owner-ids self', accept: ['aws ec2 describe-snapshots --owner-ids self --output table', 'aws ec2 describe-snapshots --owner-ids self --query Snapshots[*].[SnapshotId,StartTime]'] },
     ],
     explain: '인스턴스를 종료해도 EBS 볼륨, 스냅샷, 연결 해제된 탄력적 IP 는 남아 계속 과금됩니다. 눈에 안 보이는 잔여 리소스가 비용 누수의 주범입니다.',

@@ -59,7 +59,7 @@ window.QUIZ_BANK.internet = [
     example: '"저는 잘 보이는데요?"라는 답이 돌아오는 상황 대부분이 캐시 문제입니다.' },
 
   { diff: 'normal', type: 'mcq', q: '주소 `https://shop.example.com/item?id=5` 에서 실제 사이트의 주인을 판단할 때 봐야 할 부분은?', options: ['example.com', 'https', 'shop', 'id=5'], answer: 0,
-    explain: '맨 뒤에서 두 덩어리(`example.com`)가 등록된 도메인이고 그 앞은 하위 도메인입니다. 사기 사이트는 앞부분에 유명 브랜드 이름을 붙여 속입니다.',
+    explain: '맨 끝(`.com`)과 그 바로 앞 이름을 합친 `example.com` 이 등록된 도메인이고 그 앞은 하위 도메인입니다. `.co.kr` 처럼 끝부분이 두 칸인 주소는 `example.co.kr` 까지가 등록된 도메인입니다. 사기 사이트는 앞부분에 유명 브랜드 이름을 붙여 속입니다.',
     example: '`naver.com.login-help.xyz` 의 진짜 주인은 `login-help.xyz` 입니다. 앞의 naver.com은 눈속임입니다.' },
 
   { diff: 'normal', type: 'short', q: '내 기기가 인터넷에서 자기를 식별하기 위해 갖는 번호로, `192.168.0.1` 같은 형태로 쓰이는 것은?', answer: 'IP 주소', accept: ['ip', 'ip주소', 'ip address', '아이피', '아이피 주소'],

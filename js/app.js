@@ -202,6 +202,27 @@
     return a;
   }
 
+  // 정답 명령어 풀이 HTML: 조각(옵션·인자)마다 한 줄씩 설명하고, 순서 규칙이 있으면 아래에 붙인다.
+  function partsHTML(b) {
+    if (!b || !b.parts || !b.parts.length) return '';
+    return `<div class="parts">${b.parts.map(([t, d]) =>
+        `<div class="part"><code>${h(t)}</code><span>${fmt(d)}</span></div>`).join('')}</div>
+      ${b.order ? `<div class="order"><b>순서</b> ${fmt(b.order)}</div>` : ''}`;
+  }
+  // 문제 유형에 맞게 풀이 전체를 만든다 (과제형은 단계별로 hint 와 함께)
+  function breakdownHTML(q) {
+    const b = q.breakdown;
+    if (!b) return '';
+    if (q.type === 'task') {
+      const steps = (b.steps || []).map((s, i) => s.parts && s.parts.length
+        ? `<div class="step-parts"><div class="step-title">${h(q.steps[i].hint)}</div>
+             <div class="step-ans"><code>${h(q.steps[i].answer)}</code></div>${partsHTML(s)}</div>` : '').join('');
+      return steps ? `<h4>단계별 명령어 풀이</h4>${steps}` : '';
+    }
+    const body = partsHTML(b);
+    return body ? `<h4>${q.type === 'mcq' ? '정답 보기 풀이' : '명령어 풀이'}</h4>${body}` : '';
+  }
+
   // 새 세션 시작 (오늘의 문제·오답 복습·오답노트 선택 테스트 공통 진입점).
   // "이어서 풀기" 는 이 함수를 거치지 않으므로 풀던 세션의 순서는 그대로 유지된다.
   function startSession(opts) {
@@ -353,7 +374,8 @@
         q.steps.forEach((stp, i) => { if (i) lines.push(''); lines.push(stp.hint, stp.answer); });
         detail = `<div class="task-score">진행: ${g.n} / ${g.total} 단계</div>
           <h4>전체 정답</h4>
-          <pre>${h(lines.join('\n'))}</pre>`;
+          <pre>${h(lines.join('\n'))}</pre>
+          ${breakdownHTML(q)}`;
       } else if (q.type === 'essay') {
         const g = Quiz.gradeEssay(q, input);
         verdict = correct
@@ -371,7 +393,8 @@
         detail = `${q.type === 'short' ? `<div class="hint">내 답: <code>${h(input)}</code></div>` : ''}
           <h4>정답</h4>
           <div class="answer ${q.type === 'short' ? 'mono' : ''}">${h(Quiz.answerText(q))}</div>
-          ${q.accept?.length && q.type === 'short' ? `<div class="accept">이것도 정답: ${q.accept.map(a => `<code>${h(a)}</code>`).join(' ')}</div>` : ''}`;
+          ${q.accept?.length && q.type === 'short' ? `<div class="accept">이것도 정답: ${q.accept.map(a => `<code>${h(a)}</code>`).join(' ')}</div>` : ''}
+          ${breakdownHTML(q)}`;
       }
 
       document.getElementById('result').innerHTML = `
@@ -506,6 +529,7 @@
               ${chip('', Quiz.CATEGORIES[q.cat].name)} ${diffChip(q.diff)} ${chip('type', Quiz.TYPES[q.type])}
             </div>
             <div class="nb-ans"><span class="lbl">정답</span><span class="val ${q.type === 'short' || q.type === 'task' ? 'mono' : ''}">${h(Quiz.answerText(q))}</span></div>
+            ${q.breakdown ? `<details class="nb-parts"><summary>명령어 풀이 보기</summary>${breakdownHTML(q)}</details>` : ''}
             <div class="nb-meta">
               <span class="${due ? 'due-now' : e.stage >= 3 ? 'done' : 'hint'}">${h(Scheduler.statusText(e))}</span>
               <span class="hint">· 등록 ${new Date(e.createdAt).toLocaleDateString('ko-KR')}</span>

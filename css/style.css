@@ -352,3 +352,21 @@ textarea.ans:disabled { opacity: .7; }
   .answer { font-size: 17px; }
   .answer.mono { font-size: 16px; }
 }
+
+/* 정답 명령어 풀이: 조각(코드) | 설명 2열 목록 */
+.parts { display: grid; grid-template-columns: minmax(0, max-content) 1fr; gap: 8px 14px; margin-top: 6px; align-items: baseline; }
+.part { display: contents; }
+.part > code { justify-self: start; white-space: pre-wrap; word-break: break-all; font-size: 14px; color: var(--text);
+  padding: 3px 9px; border-radius: 7px; background: var(--pre-bg); border: 1px solid var(--hover-border); }
+.part span { font-size: 14.5px; line-height: 1.6; }
+.order { margin-top: 10px; padding: 8px 12px; border-left: 3px solid var(--accent); background: var(--panel-2); border-radius: 6px; font-size: 14.5px; }
+.order b { color: var(--accent); margin-right: 6px; }
+.step-parts { margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--border); }
+.step-parts:first-of-type { border-top: 0; padding-top: 0; }
+.step-title { color: var(--muted); font-size: 13px; }
+.step-ans code { font-size: 14.5px; font-weight: 700; color: var(--ok); }
+.nb-parts { margin-top: 8px; }
+.nb-parts summary { cursor: pointer; color: var(--accent); font-size: 13px; font-weight: 600; }
+.nb-parts h4 { margin: 10px 0 4px; font-size: 13px; color: var(--muted); }
+/* 좁은 화면: 조각과 설명을 위아래로 */
+@media (max-width: 600px) { .parts { grid-template-columns: 1fr; gap: 4px; } .part span { margin-bottom: 8px; } }

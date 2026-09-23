@@ -69,6 +69,35 @@ for (const [cat, list] of Object.entries(bank)) {
   console.log(cat.padEnd(10), String(list.length).padStart(4), '| 난이도', JSON.stringify(d), '| 유형', JSON.stringify(t));
 }
 
+// ---- 정답 명령어 풀이(parts) 검증: 조각이 정답에 순서대로 있고, 사이에 옵션·단어가 빠지지 않았는지 ----
+const PARTS = global.window.QUIZ_PARTS || {};
+const byIdV = {};
+for (const [cat, list] of Object.entries(bank)) list.forEach((q, i) => { byIdV[`${cat}-${String(i + 1).padStart(3, '0')}`] = q; });
+const gapOk = s => /^[\s"'(),;]*$/.test(s);          // 조각 사이에는 공백·문장 부호만 남아도 됨
+const cover = (at, target, parts) => {
+  if (!parts || !parts.length) return;
+  let pos = 0;
+  for (const [t, d] of parts) {
+    const i = target.indexOf(t, pos);
+    if (!t || !d || i < 0) return problems.push(`${at} 풀이 조각 "${t}" 가 정답에 순서대로 없음`);
+    if (!gapOk(target.slice(pos, i))) return problems.push(`${at} 정답의 "${target.slice(pos, i).trim()}" 풀이 누락`);
+    pos = i + t.length;
+  }
+  if (!gapOk(target.slice(pos))) problems.push(`${at} 정답 끝 "${target.slice(pos).trim()}" 풀이 누락`);
+};
+let partsN = 0;
+for (const [id, b] of Object.entries(PARTS)) {
+  const q = byIdV[id];
+  if (!q) { problems.push(`풀이 ${id}: 해당 문제 없음`); continue; }
+  partsN++;
+  if (q.type === 'task') {
+    if (!b.steps || b.steps.length !== q.steps.length) { problems.push(`풀이 ${id}: 단계 수 불일치`); continue; }
+    b.steps.forEach((s, j) => cover(`풀이 ${id}#${j}`, q.steps[j].answer, s.parts));
+  } else if (q.type === 'short') cover(`풀이 ${id}`, q.answer, b.parts);
+  else if (q.type === 'mcq') cover(`풀이 ${id}`, q.options[q.answer], b.parts);
+  else problems.push(`풀이 ${id}: ${q.type} 유형은 풀이 대상 아님`);
+}
+console.log('명령어 풀이', partsN, '문제');
 console.log('합계', grand, '문제');
 if (problems.length) {
   console.error(`\n문제 ${problems.length}건:\n` + problems.join('\n'));

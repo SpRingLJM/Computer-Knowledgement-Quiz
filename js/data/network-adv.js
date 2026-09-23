@@ -13,7 +13,7 @@ window.QUIZ_BANK.network.push(
   { diff: 'normal', type: 'task', q: '서버의 네트워크 상태를 점검하세요.',
     scene: '# 상황: 서비스 응답이 느려 연결 상태를 확인해야 합니다.',
     steps: [
-      { hint: '# 1. 리스닝 중인 TCP 포트를 프로세스 정보와 함께 확인', answer: 'ss -lntp', accept: ['ss -tlnp', 'ss -lntup', 'netstat -lntp'] },
+      { hint: '# 1. 리스닝 중인 TCP 포트를 프로세스 정보와 함께 확인', answer: 'ss -lntp', accept: ['ss -tlnp', 'ss -lntup', 'netstat -lntp', 'ss -ltnp', 'ss -tnlp'] },
       { hint: '# 2. 현재 소켓 상태별 통계 요약 확인', answer: 'ss -s', accept: ['ss --summary'] },
       { hint: '# 3. 서버의 라우팅 테이블 확인', answer: 'ip route', accept: ['ip r', 'ip route show', 'route -n', 'netstat -rn'] },
     ],
@@ -34,8 +34,8 @@ window.QUIZ_BANK.network.push(
   { diff: 'hard', type: 'task', q: '방화벽 규칙을 확인하고 필요한 포트를 열어야 합니다.',
     scene: '# 상황: 우분투 서버에서 ufw 로 웹 서비스 포트를 허용해야 합니다.',
     steps: [
-      { hint: '# 1. 현재 방화벽 상태와 규칙을 번호와 함께 확인', answer: 'ufw status numbered', accept: ['sudo ufw status numbered', 'ufw status verbose', 'ufw status'] },
-      { hint: '# 2. 443 포트를 TCP 로 허용', answer: 'ufw allow 443/tcp', accept: ['sudo ufw allow 443/tcp', 'ufw allow 443', 'ufw allow https'] },
+      { hint: '# 1. 현재 방화벽 상태와 규칙을 번호와 함께 확인', answer: 'ufw status numbered', accept: ['sudo ufw status numbered'] },
+      { hint: '# 2. 443 포트를 TCP 로 허용', answer: 'ufw allow 443/tcp', accept: ['sudo ufw allow 443/tcp', 'ufw allow https'] },
       { hint: '# 3. 특정 대역 10.0.0.0/8 에서만 22 포트 접근 허용', answer: 'ufw allow from 10.0.0.0/8 to any port 22', accept: ['sudo ufw allow from 10.0.0.0/8 to any port 22', 'ufw allow from 10.0.0.0/8 to any port 22 proto tcp'] },
     ],
     explain: 'SSH 를 막아 버리면 원격 접속이 끊겨 복구가 어렵습니다. 방화벽 규칙을 바꿀 때는 SSH 허용을 먼저 확인하고, 가능하면 콘솔 접근 수단을 확보한 뒤 작업합니다.',
