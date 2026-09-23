@@ -323,8 +323,14 @@ textarea.ans:disabled { opacity: .7; }
   white-space: pre-wrap; word-break: break-word;
 }
 .answer.mono { font-size: 18px; letter-spacing: .01em; }
-.accept { margin-top: 8px; font-size: 14px; color: var(--muted); }
-.accept code { color: var(--text); font-size: 14px; background: var(--code-bg); }
+/* "이것도 정답" 칩: 결과 박스 배경과 명도가 비슷해 경계가 묻히던 문제 보완.
+   - flex + gap: 칩 사이를 공백 문자가 아닌 고정 여백으로 벌려 띄어쓰기와 헷갈리지 않게
+   - 배경은 결과 박스보다 어두운 --pre-bg, 테두리는 밝은 --hover-border → 다크/라이트 모두 대비 확보 */
+.accept { margin-top: 10px; font-size: 14px; color: var(--muted); display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
+.accept code {
+  color: var(--text); font-size: 14px; padding: 3px 9px; border-radius: 7px;
+  background: var(--pre-bg); border: 1px solid var(--hover-border);
+}
 .result h4 { font-size: 14px; }
 .result p { font-size: 15.5px; }
 .result .hint code { font-size: 15px; color: var(--text); }
