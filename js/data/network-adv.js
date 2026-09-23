@@ -14,7 +14,7 @@ window.QUIZ_BANK.network.push(
     scene: '# 상황: 서비스 응답이 느려 연결 상태를 확인해야 합니다.',
     steps: [
       { hint: '# 1. 리스닝 중인 TCP 포트를 프로세스 정보와 함께 확인', answer: 'ss -lntp', accept: ['ss -tlnp', 'ss -lntup', 'netstat -lntp'] },
-      { hint: '# 2. 현재 소켓 상태별 통계 요약 확인', answer: 'ss -s', accept: ['ss --summary', 'netstat -s'] },
+      { hint: '# 2. 현재 소켓 상태별 통계 요약 확인', answer: 'ss -s', accept: ['ss --summary'] },
       { hint: '# 3. 서버의 라우팅 테이블 확인', answer: 'ip route', accept: ['ip r', 'ip route show', 'route -n', 'netstat -rn'] },
     ],
     explain: 'TIME_WAIT 이나 CLOSE_WAIT 이 비정상적으로 많이 쌓였는지는 `ss -s` 요약에서 바로 보입니다. CLOSE_WAIT 누적은 애플리케이션이 소켓을 닫지 않는다는 신호입니다.',
@@ -23,7 +23,7 @@ window.QUIZ_BANK.network.push(
   { diff: 'hard', type: 'task', q: 'HTTPS API 응답을 자세히 확인해야 합니다.',
     scene: '# 상황: API 호출이 간헐적으로 실패해 응답 헤더와 인증서를 봐야 합니다.',
     steps: [
-      { hint: '# 1. https://api.example.com/health 의 응답 헤더만 확인', answer: 'curl -I https://api.example.com/health', accept: ['curl --head https://api.example.com/health', 'curl -i https://api.example.com/health'] },
+      { hint: '# 1. https://api.example.com/health 의 응답 헤더만 확인', answer: 'curl -I https://api.example.com/health', accept: ['curl --head https://api.example.com/health'] },
       { hint: '# 2. 같은 요청을 상세 로그와 함께 보내 TLS 핸드셰이크 과정 확인', answer: 'curl -v https://api.example.com/health', accept: ['curl -vvv https://api.example.com/health', 'curl --verbose https://api.example.com/health'] },
       { hint: '# 3. 서버 인증서의 유효 기간 확인', answer: 'openssl s_client -connect api.example.com:443', accept: ['echo | openssl s_client -connect api.example.com:443', 'openssl s_client -connect api.example.com:443 -servername api.example.com'] },
       { hint: '# 4. 응답에 걸린 단계별 시간 측정 (총 소요 시간 출력)', answer: 'curl -o /dev/null -s -w %{time_total} https://api.example.com/health', accept: ['curl -w %{time_total} -o /dev/null -s https://api.example.com/health', 'curl -s -o /dev/null -w %{time_total} https://api.example.com/health'] },

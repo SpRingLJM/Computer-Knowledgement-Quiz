@@ -11,7 +11,7 @@ window.QUIZ_BANK.sql.push(
     explain: '`pg_stat_activity` 는 MySQL 의 `SHOW PROCESSLIST` 에 해당합니다. `state` 가 `idle in transaction` 인 세션이 오래 남아 있으면 락을 잡고 있거나 VACUUM 을 막고 있는 것이라 특히 주의합니다.',
     example: '`SELECT pg_cancel_backend(pid)` 로 쿼리만 취소하고, 안 되면 `pg_terminate_backend(pid)` 로 세션을 끊습니다.' },
 
-  { diff: 'hard', type: 'short', q: 'PostgreSQL 에서 PID 1234 세션이 실행 중인 쿼리를 취소(세션은 유지)하는 SQL 은?', answer: 'SELECT pg_cancel_backend(1234)', accept: ['select pg_cancel_backend(1234)', 'SELECT pg_terminate_backend(1234)', 'select pg_terminate_backend(1234)'],
+  { diff: 'hard', type: 'short', q: 'PostgreSQL 에서 PID 1234 세션이 실행 중인 쿼리를 취소(세션은 유지)하는 SQL 은?', answer: 'SELECT pg_cancel_backend(1234)', accept: ['select pg_cancel_backend(1234)'],
     explain: '`pg_cancel_backend` 는 SIGINT 로 현재 쿼리만 취소하고 연결은 남깁니다. `pg_terminate_backend` 는 세션 자체를 끊으며 `idle in transaction` 처럼 쿼리가 없는 세션에는 이쪽만 통합니다.',
     example: '배치 쿼리가 운영 DB 를 잠그고 있을 때 먼저 cancel 을 시도하고, 몇 초 안에 안 풀리면 terminate 합니다. 애플리케이션 풀이 연결을 다시 만드니 서비스 영향은 보통 미미합니다.' },
 
@@ -19,7 +19,7 @@ window.QUIZ_BANK.sql.push(
     explain: '`slow_query_log = ON` 과 함께 써야 하며, `SET GLOBAL` 은 재시작하면 사라지므로 `my.cnf` 에도 적어 둡니다. 기록된 로그는 `mysqldumpslow` 나 `pt-query-digest` 로 집계합니다.',
     example: '운영 중 갑자기 느려졌을 때 임계값을 1초로 낮춰 잠시 수집한 뒤, 상위 쿼리에 인덱스를 추가하고 원래 값으로 되돌리는 방식으로 씁니다.' },
 
-  { diff: 'hard', type: 'short', q: 'PostgreSQL 에서 `orders` 테이블의 데드 튜플을 정리하고 통계까지 갱신하며, 진행 상황을 출력하는 명령어는?', answer: 'VACUUM (VERBOSE, ANALYZE) orders', accept: ['vacuum verbose analyze orders', 'VACUUM VERBOSE ANALYZE orders', 'vacuum (analyze, verbose) orders', 'VACUUM ANALYZE orders', 'vacuum analyze orders'],
+  { diff: 'hard', type: 'short', q: 'PostgreSQL 에서 `orders` 테이블의 데드 튜플을 정리하고 통계까지 갱신하며, 진행 상황을 출력하는 명령어는?', answer: 'VACUUM (VERBOSE, ANALYZE) orders', accept: ['vacuum verbose analyze orders', 'VACUUM VERBOSE ANALYZE orders', 'vacuum (analyze, verbose) orders'],
     explain: 'MVCC 때문에 UPDATE/DELETE 된 옛 행(데드 튜플)은 VACUUM 이 회수하기 전까지 공간을 차지합니다. autovacuum 이 있지만 대량 삭제 후엔 수동 실행이 빠릅니다. `VACUUM FULL` 은 테이블을 통째로 재작성하며 배타 락을 잡으므로 운영 중엔 피합니다.',
     example: '`SELECT relname, n_dead_tup FROM pg_stat_user_tables ORDER BY n_dead_tup DESC` 로 데드 튜플이 많은 테이블을 찾아 우선 처리합니다.' },
 
@@ -39,7 +39,7 @@ window.QUIZ_BANK.sql.push(
     explain: '`NOT NULL` 컬럼을 추가하려면 기존 행을 채울 `DEFAULT` 가 필요합니다. PostgreSQL 11+ 와 MySQL 8 은 상수 기본값이면 테이블을 재작성하지 않고 메타데이터만 바꿔 대용량 테이블에서도 즉시 끝납니다.',
     example: '기본값이 `now()` 같은 비상수면 테이블 전체를 다시 쓰므로, 운영 중엔 NULL 허용으로 추가 → 배치로 채움 → `SET NOT NULL` 3단계로 나눠 락 시간을 줄입니다.' },
 
-  { diff: 'hard', type: 'short', q: 'PostgreSQL 에서 세션의 트랜잭션 격리 수준을 `SERIALIZABLE` 로 시작하는 SQL 은?', answer: 'BEGIN ISOLATION LEVEL SERIALIZABLE', accept: ['begin isolation level serializable', 'START TRANSACTION ISOLATION LEVEL SERIALIZABLE', 'start transaction isolation level serializable', 'BEGIN TRANSACTION ISOLATION LEVEL SERIALIZABLE', 'SET TRANSACTION ISOLATION LEVEL SERIALIZABLE'],
+  { diff: 'hard', type: 'short', q: 'PostgreSQL 에서 세션의 트랜잭션 격리 수준을 `SERIALIZABLE` 로 시작하는 SQL 은?', answer: 'BEGIN ISOLATION LEVEL SERIALIZABLE', accept: ['begin isolation level serializable', 'START TRANSACTION ISOLATION LEVEL SERIALIZABLE', 'start transaction isolation level serializable', 'BEGIN TRANSACTION ISOLATION LEVEL SERIALIZABLE'],
     explain: 'PostgreSQL 기본은 READ COMMITTED 입니다. SERIALIZABLE 은 동시 트랜잭션이 순차 실행과 같은 결과를 보장하되, 충돌 시 `could not serialize access` 오류로 한쪽이 실패하므로 애플리케이션이 재시도해야 합니다.',
     example: '재고 차감·잔액 이체처럼 "읽고 계산해서 쓰는" 로직에서 두 요청이 동시에 같은 잔액을 읽는 문제(lost update)를 막을 때 씁니다. 대안으로 `SELECT ... FOR UPDATE` 행 잠금이 있습니다.' },
 

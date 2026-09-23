@@ -125,7 +125,7 @@ window.QUIZ_BANK.container = [
   { diff: 'hard', type: 'mcq', q: 'Kubernetes 에서 `Deployment` 대신 `StatefulSet` 을 써야 하는 경우는?', options: ['무상태 웹 서버를 여러 개 띄울 때', 'Pod 마다 고정된 이름·네트워크 ID·전용 스토리지가 필요할 때 (DB, Kafka 등)', '노드마다 하나씩 실행해야 할 때', '한 번 실행하고 끝나는 배치 작업'], answer: 1,
     explain: 'StatefulSet 은 `pg-0, pg-1` 처럼 순서 있는 이름, 안정적인 DNS(headless Service), Pod 별 PVC(volumeClaimTemplates)를 제공합니다. 노드당 하나는 DaemonSet, 일회성은 Job.',
     example: 'PostgreSQL 클러스터: `pg-0` 이 primary, `pg-1/2` 가 replica. 재시작해도 같은 이름과 볼륨을 유지합니다.' },
-  { diff: 'hard', type: 'short', q: 'Node `worker-2` 를 새 Pod 스케줄링에서 제외하고, 기존 Pod 를 안전하게 다른 노드로 옮기는(퇴거) 명령어는?', answer: 'kubectl drain worker-2 --ignore-daemonsets', accept: ['kubectl drain worker-2', 'kubectl drain worker-2 --ignore-daemonsets --delete-emptydir-data', 'kubectl drain worker-2 --ignore-daemonsets --delete-local-data', 'kubectl drain worker-2 --delete-emptydir-data --ignore-daemonsets', 'kubectl drain worker-2 --ignore-daemonsets --force'],
+  { diff: 'hard', type: 'short', q: 'Node `worker-2` 를 새 Pod 스케줄링에서 제외하고, 기존 Pod 를 안전하게 다른 노드로 옮기는(퇴거) 명령어는?', answer: 'kubectl drain worker-2 --ignore-daemonsets', accept: ['kubectl drain worker-2 --ignore-daemonsets --delete-emptydir-data', 'kubectl drain worker-2 --delete-emptydir-data --ignore-daemonsets', 'kubectl drain worker-2 --ignore-daemonsets --force'],
     explain: '`drain` = `cordon`(스케줄 금지) + Pod 퇴거(evict). DaemonSet Pod 는 옮길 수 없으므로 `--ignore-daemonsets` 필요. 작업 후 `kubectl uncordon worker-2`.',
     example: '노드 커널 업그레이드: `drain` → 패치/재부팅 → `uncordon`. PodDisruptionBudget 이 있으면 최소 가용 수를 지키며 천천히 퇴거됩니다.' },
   { diff: 'hard', type: 'ox', q: 'Dockerfile 에서 `ENV` 로 설정한 값은 빌드 시점뿐 아니라 실행되는 컨테이너에도 환경변수로 남지만, `ARG` 는 빌드 시점에만 존재한다.', answer: true,

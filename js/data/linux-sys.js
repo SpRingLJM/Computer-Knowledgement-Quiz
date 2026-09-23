@@ -86,7 +86,7 @@ window.QUIZ_BANK.linux.push(
     explain: 'systemd 타겟은 SysV 런레벨을 대체합니다. `multi-user.target` 이 런레벨 3, `graphical.target` 이 5 에 해당하며, `systemctl get-default` 로 현재 값을 확인합니다.',
     example: 'GUI 가 깔린 서버는 메모리를 수백 MB 낭비합니다. 원격 관리만 한다면 이 명령으로 텍스트 모드로 돌리고 필요할 때 `systemctl isolate graphical.target` 으로 잠깐 띄웁니다.' },
 
-  { diff: 'normal', type: 'short', q: '부팅이 느릴 때, 각 유닛이 기동에 걸린 시간을 오래 걸린 순서로 보여주는 명령어는?', answer: 'systemd-analyze blame', accept: ['systemd-analyze critical-chain', 'systemd-analyze', 'systemd-analyze plot > boot.svg'],
+  { diff: 'normal', type: 'short', q: '부팅이 느릴 때, 각 유닛이 기동에 걸린 시간을 오래 걸린 순서로 보여주는 명령어는?', answer: 'systemd-analyze blame', accept: [],
     explain: '`systemd-analyze` 는 커널·initrd·userspace 총 소요 시간을, `blame` 은 유닛별 시간을, `critical-chain` 은 의존성 사슬에서 어느 유닛이 병목인지 보여줍니다.',
     example: '`NetworkManager-wait-online.service` 나 `cloud-init` 이 수십 초를 잡아먹는 경우가 많고, 필요 없으면 `systemctl disable` 로 부팅을 크게 줄일 수 있습니다.' },
 
@@ -106,8 +106,8 @@ window.QUIZ_BANK.linux.push(
     explain: '기본값 `auto` 는 `/var/log/journal` 디렉터리가 있을 때만 디스크에 저장하고, 없으면 `/run/log/journal`(메모리)에만 써서 재부팅하면 사라집니다. `Storage=persistent` 는 디렉터리를 만들어서라도 디스크에 남깁니다.',
     example: '`mkdir -p /var/log/journal && systemctl restart systemd-journald` 만으로도 auto 모드에서 영구 저장이 시작됩니다. `SystemMaxUse=1G` 로 용량 상한을 함께 잡습니다.' },
 
-  { diff: 'hard', type: 'short', q: 'root 비밀번호를 잊어 복구 모드로 들어가려 합니다. GRUB 에서 커널 라인 끝에 추가해 systemd 대신 initramfs 셸로 떨어지게 하는 인자는?', answer: 'rd.break', accept: ['rd.break enforcing=0', 'init=/bin/bash', 'systemd.unit=rescue.target', 'systemd.unit=emergency.target'],
-    explain: '`rd.break` 는 initramfs 단계에서 멈춰 셸을 줍니다. 루트가 `/sysroot` 에 읽기 전용으로 마운트되므로 `mount -o remount,rw /sysroot` → `chroot /sysroot` → `passwd` 순으로 진행하고, SELinux 를 쓰는 시스템은 `touch /.autorelabel` 을 잊으면 재부팅 후 로그인이 안 됩니다. `rescue.target` 은 root 비밀번호를 물어보므로 잊은 경우엔 소용없습니다.',
+  { diff: 'hard', type: 'short', q: 'root 비밀번호를 잊어 복구 모드로 들어가려 합니다. GRUB 에서 커널 라인 끝에 추가해 systemd 대신 initramfs 셸로 떨어지게 하는 인자는?', answer: 'rd.break', accept: ['rd.break enforcing=0'],
+    explain: '`rd.break` 는 initramfs 단계에서 멈춰 셸을 줍니다. 루트가 `/sysroot` 에 읽기 전용으로 마운트되므로 `mount -o remount,rw /sysroot` → `chroot /sysroot` → `passwd` 순으로 진행하고, SELinux 를 쓰는 시스템은 `touch /.autorelabel` 을 잊으면 재부팅 후 로그인이 안 됩니다. `systemd.unit=rescue.target`·`emergency.target` 은 root 비밀번호를 물어보므로 잊은 경우엔 소용없고, `init=/bin/bash` 는 initramfs 가 아니라 실제 루트에서 셸을 띄우는 다른 방법입니다.',
     example: '클라우드 VM 은 콘솔 접근이 제한적이라 이 방법 대신 디스크를 떼어 다른 인스턴스에 붙여 `/etc/shadow` 를 고치는 방식도 씁니다.' },
 
   { diff: 'normal', type: 'short', q: '실패(failed) 상태인 systemd 유닛만 나열하는 명령어는?', answer: 'systemctl --failed', accept: ['systemctl list-units --failed', 'systemctl list-units --state=failed', 'systemctl list-units --state failed', 'sudo systemctl --failed'],
@@ -143,11 +143,11 @@ window.QUIZ_BANK.linux.push(
     explain: '기본 동작은 fstab 의 마운트 하나라도 실패하면 emergency 모드로 진입합니다. 외장 디스크·NFS·선택적 데이터 볼륨에는 `nofail` 을 붙여 루트만 있으면 부팅되게 합니다. `_netdev` 는 네트워크가 올라온 뒤 마운트하라는 별도 옵션입니다.',
     example: '`UUID=... /data xfs defaults,nofail 0 0` 처럼 씁니다. 데이터 디스크를 떼어낸 VM 이 부팅 중 멈추는 사고의 대부분이 이 옵션 하나로 예방됩니다.' },
 
-  { diff: 'normal', type: 'short', q: '`/dev/sdb` 의 파티션 테이블을 바꾼 뒤 재부팅 없이 커널이 새 파티션을 인식하게 하는 명령어는?', answer: 'partprobe /dev/sdb', accept: ['partprobe', 'sudo partprobe /dev/sdb', 'kpartx -a /dev/sdb', 'blockdev --rereadpt /dev/sdb'],
+  { diff: 'normal', type: 'short', q: '`/dev/sdb` 의 파티션 테이블을 바꾼 뒤 재부팅 없이 커널이 새 파티션을 인식하게 하는 명령어는?', answer: 'partprobe /dev/sdb', accept: ['partprobe', 'sudo partprobe /dev/sdb', 'blockdev --rereadpt /dev/sdb'],
     explain: '`fdisk`/`parted` 로 파티션을 만들어도 디스크가 사용 중이면 커널이 테이블을 다시 읽지 못해 `/dev/sdb2` 가 안 생깁니다. `partprobe` 가 커널에 재읽기를 요청합니다.',
     example: '"Re-reading the partition table failed: Device or resource busy" 메시지가 나오면 `partprobe` 를 실행하고, 그래도 안 되면 재부팅이 필요합니다.' },
 
-  { diff: 'hard', type: 'short', q: 'VM 하이퍼바이저에서 `/dev/sdb` 디스크 크기를 늘렸는데 `lsblk` 에 예전 크기가 보입니다. 재부팅 없이 커널이 새 크기를 인식하게 하는 명령어는?', answer: 'echo 1 > /sys/class/block/sdb/device/rescan', accept: ['echo 1 > /sys/block/sdb/device/rescan', 'echo 1 | sudo tee /sys/class/block/sdb/device/rescan', 'rescan-scsi-bus.sh -s', 'echo 1 > /sys/class/scsi_device/*/device/rescan'],
+  { diff: 'hard', type: 'short', q: 'VM 하이퍼바이저에서 `/dev/sdb` 디스크 크기를 늘렸는데 `lsblk` 에 예전 크기가 보입니다. 재부팅 없이 커널이 새 크기를 인식하게 하는 명령어는?', answer: 'echo 1 > /sys/class/block/sdb/device/rescan', accept: ['echo 1 > /sys/block/sdb/device/rescan', 'echo 1 | sudo tee /sys/class/block/sdb/device/rescan', 'rescan-scsi-bus.sh -s'],
     explain: 'SCSI 장치의 sysfs `rescan` 파일에 1 을 쓰면 커널이 장치 용량을 다시 조회합니다. 이후 `growpart` → `pvresize` → `lvextend -r` 순으로 위 계층에 반영합니다.',
     example: 'AWS EBS 는 온라인 확장 후 NVMe 라 자동 인식되지만, VMware/KVM 의 SCSI 디스크는 이 rescan 이 필요한 경우가 많습니다.' },
 
@@ -217,11 +217,11 @@ window.QUIZ_BANK.linux.push(
     explain: '`lsmod` 는 `/proc/modules` 를 읽기 좋게 보여줍니다. 특정 모듈 정보는 `modinfo 모듈명`, 로드는 `modprobe 모듈명`, 해제는 `modprobe -r` 입니다.',
     example: '쿠버네티스 노드 준비 시 `lsmod | grep br_netfilter` 로 브리지 넷필터 모듈이 올라와 있는지 확인합니다.' },
 
-  { diff: 'normal', type: 'short', q: '커널 모듈 `br_netfilter` 를 지금 로드하는 명령어는?', answer: 'modprobe br_netfilter', accept: ['sudo modprobe br_netfilter', 'insmod br_netfilter'],
+  { diff: 'normal', type: 'short', q: '커널 모듈 `br_netfilter` 를 지금 로드하는 명령어는?', answer: 'modprobe br_netfilter', accept: ['sudo modprobe br_netfilter'],
     explain: '`modprobe` 는 의존 모듈까지 함께 로드하고, `insmod` 는 파일 경로를 직접 지정해 단일 모듈만 올립니다. 재부팅 후에도 유지하려면 `/etc/modules-load.d/*.conf` 에 모듈명을 적어 둡니다.',
     example: 'kubeadm 사전 준비: `echo br_netfilter > /etc/modules-load.d/k8s.conf && modprobe br_netfilter` 후 `sysctl net.bridge.bridge-nf-call-iptables=1` 을 설정합니다.' },
 
-  { diff: 'normal', type: 'short', q: '`/etc/sysctl.d/99-custom.conf` 에 `vm.swappiness=10` 을 적은 뒤, 재부팅 없이 **모든 sysctl 설정 파일**을 다시 읽어 적용하는 명령어는?', answer: 'sysctl --system', accept: ['sysctl -p /etc/sysctl.d/99-custom.conf', 'sysctl -p', 'sudo sysctl --system', 'sysctl -w vm.swappiness=10'],
+  { diff: 'normal', type: 'short', q: '`/etc/sysctl.d/99-custom.conf` 에 `vm.swappiness=10` 을 적은 뒤, 재부팅 없이 **모든 sysctl 설정 파일**을 다시 읽어 적용하는 명령어는?', answer: 'sysctl --system', accept: ['sysctl -p /etc/sysctl.d/99-custom.conf', 'sudo sysctl --system'],
     explain: '`sysctl -p` 는 인자 없이 쓰면 `/etc/sysctl.conf` 만 읽습니다. `/etc/sysctl.d/` 아래 파일까지 모두 적용하려면 `--system` 을 써야 합니다. `-w` 는 즉시 적용만 하고 파일에는 남기지 않습니다.',
     example: '`sysctl vm.swappiness` 로 적용 값을 확인합니다. 파일 이름 앞 숫자(99-)가 클수록 나중에 읽혀 우선합니다.' },
 
@@ -253,7 +253,7 @@ window.QUIZ_BANK.linux.push(
     explain: '사용자별 crontab 은 `/var/spool/cron/` 아래에 저장되며 직접 편집하지 말고 `crontab` 명령으로 다룹니다. `-l` 은 조회, `-r` 은 전체 삭제(확인 없음!)입니다.',
     example: '`crontab -r` 을 `-e` 로 잘못 치면 복구가 어렵습니다. 중요한 crontab 은 `crontab -l > backup.cron` 으로 백업하거나 `/etc/cron.d/` 에 파일로 두는 편이 안전합니다.' },
 
-  { diff: 'normal', type: 'short', q: '마운트된 모든 파일시스템을 트리 구조로 보여주는 명령어는?', answer: 'findmnt', accept: ['findmnt -t xfs,ext4', 'mount | column -t', 'cat /proc/mounts'],
+  { diff: 'normal', type: 'short', q: '마운트된 모든 파일시스템을 트리 구조로 보여주는 명령어는?', answer: 'findmnt', accept: [],
     explain: '`findmnt` 는 `mount` 출력보다 읽기 쉽고 `findmnt /data` 처럼 특정 경로가 어느 장치에 어떤 옵션으로 마운트됐는지 바로 알려줍니다.',
     example: '`findmnt -o TARGET,SOURCE,FSTYPE,OPTIONS /data` 로 `ro`(읽기 전용) 로 떨어진 볼륨을 찾습니다. 디스크 에러 시 커널이 자동으로 ro 재마운트하는 경우가 있습니다.' },
 
@@ -269,7 +269,7 @@ window.QUIZ_BANK.linux.push(
       { hint: '# 2. 볼륨 그룹 vg_data 생성', answer: 'vgcreate vg_data /dev/sdb', accept: ['sudo vgcreate vg_data /dev/sdb'] },
       { hint: '# 3. 남은 공간 전부를 쓰는 논리 볼륨 lv_data 생성', answer: 'lvcreate -l 100%FREE -n lv_data vg_data', accept: ['lvcreate -n lv_data -l 100%FREE vg_data', 'lvcreate -l +100%FREE -n lv_data vg_data', 'sudo lvcreate -l 100%FREE -n lv_data vg_data'] },
       { hint: '# 4. XFS 파일시스템 생성', answer: 'mkfs.xfs /dev/vg_data/lv_data', accept: ['mkfs -t xfs /dev/vg_data/lv_data', 'mkfs.xfs /dev/mapper/vg_data-lv_data', 'sudo mkfs.xfs /dev/vg_data/lv_data'] },
-      { hint: '# 5. 마운트 포인트를 만들고 마운트 (한 줄)', answer: 'mkdir -p /data && mount /dev/vg_data/lv_data /data', accept: ['mkdir /data && mount /dev/vg_data/lv_data /data', 'mkdir -p /data; mount /dev/vg_data/lv_data /data', 'mount /dev/vg_data/lv_data /data', 'mkdir -p /data && mount /dev/mapper/vg_data-lv_data /data'] },
+      { hint: '# 5. 마운트 포인트를 만들고 마운트 (한 줄)', answer: 'mkdir -p /data && mount /dev/vg_data/lv_data /data', accept: ['mkdir /data && mount /dev/vg_data/lv_data /data', 'mkdir -p /data; mount /dev/vg_data/lv_data /data', 'mkdir -p /data && mount /dev/mapper/vg_data-lv_data /data'] },
     ],
     explain: 'PV → VG → LV → 파일시스템 → 마운트 순서입니다. 마지막으로 `/etc/fstab` 에 `UUID=... /data xfs defaults,nofail 0 0` 을 추가하고 `mount -a` 로 검증해야 재부팅 후에도 유지됩니다.',
     example: '나중에 디스크를 하나 더 붙이면 `vgextend` → `lvextend -r` 두 줄로 `/data` 가 무중단 확장됩니다. 처음부터 LVM 으로 잡는 이유입니다.' },
@@ -291,7 +291,7 @@ window.QUIZ_BANK.linux.push(
       { hint: '# 1. 2GiB 크기의 /swapfile 을 즉시 할당', answer: 'fallocate -l 2G /swapfile', accept: ['dd if=/dev/zero of=/swapfile bs=1M count=2048', 'sudo fallocate -l 2G /swapfile', 'fallocate -l 2GiB /swapfile'] },
       { hint: '# 2. 스왑 파일 권한을 root 만 읽고 쓸 수 있게 설정', answer: 'chmod 600 /swapfile', accept: ['chmod 0600 /swapfile', 'sudo chmod 600 /swapfile'] },
       { hint: '# 3. 파일을 스왑 영역으로 포맷', answer: 'mkswap /swapfile', accept: ['sudo mkswap /swapfile'] },
-      { hint: '# 4. 스왑 활성화', answer: 'swapon /swapfile', accept: ['sudo swapon /swapfile', 'swapon -a'] },
+      { hint: '# 4. 스왑 활성화', answer: 'swapon /swapfile', accept: ['sudo swapon /swapfile'] },
     ],
     explain: '권한이 600 이 아니면 `swapon` 이 "insecure permissions" 경고를 냅니다. 재부팅 후에도 쓰려면 fstab 에 `/swapfile none swap sw 0 0` 을 추가하고, `free -h` 나 `swapon --show` 로 확인합니다.',
     example: 'XFS/btrfs 위의 스왑 파일은 `fallocate` 로 만들면 안 되는 경우가 있어(홀이 생김) `dd` 를 권장합니다. 스왑은 OOM 을 늦출 뿐이라 근본 원인(메모리 누수, 과도한 워커 수)은 따로 잡아야 합니다.' },

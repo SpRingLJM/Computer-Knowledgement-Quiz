@@ -4,7 +4,7 @@ window.QUIZ_BANK.linux.push(
     scene: '# 상황: 웹 서버에서 "No space left on device" 오류가 발생했습니다.',
     steps: [
       { hint: '# 1. 마운트된 파일시스템별 사용량을 사람이 읽기 좋은 단위로 확인', answer: 'df -h', accept: ['df -h /', 'df --human-readable'] },
-      { hint: '# 2. /var/log 아래에서 용량을 많이 쓰는 디렉터리를 한 단계만 합산해 확인', answer: 'du -sh /var/log/*', accept: ['du -sh /var/log/*/', 'du -h -s /var/log/*', 'du -sh /var/log/'] },
+      { hint: '# 2. /var/log 아래에서 용량을 많이 쓰는 디렉터리를 한 단계만 합산해 확인', answer: 'du -sh /var/log/*', accept: ['du -sh /var/log/*/', 'du -h -s /var/log/*'] },
       { hint: '# 3. 삭제하지 않고 app.log 파일의 내용만 비워 0바이트로 만들기', answer: 'truncate -s 0 /var/log/app.log', accept: ['> /var/log/app.log', ': > /var/log/app.log', 'truncate --size 0 /var/log/app.log', 'cat /dev/null > /var/log/app.log'] },
     ],
     explain: '`rm` 으로 로그를 지우면 프로세스가 파일 핸들을 잡고 있어 용량이 반환되지 않습니다. `truncate -s 0` 이나 리다이렉션으로 내용만 비워야 즉시 공간이 회수됩니다.',

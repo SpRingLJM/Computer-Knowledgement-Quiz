@@ -3,7 +3,7 @@ window.QUIZ_BANK.container.push(
   { diff: 'easy', type: 'task', q: 'Nginx 컨테이너를 띄우고 정상 동작을 확인하세요.',
     scene: '# 상황: 테스트 서버에 웹 서버 컨테이너를 새로 올려야 합니다.',
     steps: [
-      { hint: '# 1. nginx:alpine 이미지를 백그라운드로, 호스트 8080 포트를 컨테이너 80 포트에 연결해 실행', answer: 'docker run -d -p 8080:80 nginx:alpine', accept: ['docker container run -d -p 8080:80 nginx:alpine', 'docker run -d -p 8080:80 --name web nginx:alpine', 'docker run --detach -p 8080:80 nginx:alpine'] },
+      { hint: '# 1. nginx:alpine 이미지를 이름 web 으로, 백그라운드에서, 호스트 8080 포트를 컨테이너 80 포트에 연결해 실행', answer: 'docker run -d --name web -p 8080:80 nginx:alpine', accept: ['docker run -d -p 8080:80 --name web nginx:alpine', 'docker run --name web -d -p 8080:80 nginx:alpine', 'docker container run -d --name web -p 8080:80 nginx:alpine', 'docker run --detach --name web -p 8080:80 nginx:alpine', 'docker run -d --name=web -p 8080:80 nginx:alpine'] },
       { hint: '# 2. 실행 중인 컨테이너 목록 확인', answer: 'docker ps', accept: ['docker container ls', 'docker ps -a', 'docker container list'] },
       { hint: '# 3. web 컨테이너의 로그를 실시간으로 따라가며 확인', answer: 'docker logs -f web', accept: ['docker logs --follow web', 'docker container logs -f web'] },
     ],
@@ -58,8 +58,8 @@ window.QUIZ_BANK.container.push(
   { diff: 'extreme', type: 'essay', q: '쿠버네티스에서 파드가 Pending 상태로 머물러 있습니다. 가능한 원인과 확인 방법을 설명하세요.',
     keywords: [['describe', '이벤트', 'events'], ['리소스', 'CPU', '메모리', 'requests'], ['노드', '스케줄링', '스케줄러'], ['taint', 'toleration', 'affinity', 'nodeSelector'], ['PVC', '볼륨', '스토리지'], ['이미지', 'ImagePull']],
     minKeywords: 4,
-    model: 'Pending 은 스케줄러가 파드를 배치할 노드를 찾지 못했다는 뜻이므로 `kubectl describe pod` 의 Events 를 먼저 봅니다. 가장 흔한 원인은 requests 로 요청한 CPU·메모리를 수용할 여유 노드가 없는 경우이고, `kubectl top nodes` 와 `describe node` 로 할당 가능량을 확인합니다. 노드에 taint 가 걸려 있는데 파드에 toleration 이 없거나, nodeSelector·affinity 조건에 맞는 노드가 없어도 배치되지 않습니다. PVC 가 바인딩되지 않아 대기하는 경우도 있으니 `kubectl get pvc` 로 확인합니다. 참고로 이미지 문제로 인한 실패는 Pending 이 아니라 ContainerCreating 이나 ImagePullBackOff 로 나타납니다.',
-    explain: 'Pending 과 ContainerCreating 은 다른 단계의 문제입니다. 전자는 배치 자체가 안 된 것이고 후자는 노드는 정해졌으나 컨테이너가 준비되지 않은 상태입니다.',
+    model: 'Pending 은 스케줄러가 파드를 배치할 노드를 찾지 못했다는 뜻이므로 `kubectl describe pod` 의 Events 를 먼저 봅니다. 가장 흔한 원인은 requests 로 요청한 CPU·메모리를 수용할 여유 노드가 없는 경우이고, `kubectl top nodes` 와 `describe node` 로 할당 가능량을 확인합니다. 노드에 taint 가 걸려 있는데 파드에 toleration 이 없거나, nodeSelector·affinity 조건에 맞는 노드가 없어도 배치되지 않습니다. PVC 가 바인딩되지 않아 대기하는 경우도 있으니 `kubectl get pvc` 로 확인합니다. 참고로 노드가 정해진 뒤 이미지를 받는 중이거나 받지 못한 경우에도 파드 phase 는 여전히 Pending 이지만, `kubectl get pods` 의 STATUS 에는 ContainerCreating 이나 ImagePullBackOff 같은 대기 사유가 표시되므로 구분할 수 있습니다.',
+    explain: 'STATUS 가 Pending 이면 아직 노드에 배치되지 않은 것이고, ContainerCreating·ImagePullBackOff 는 노드는 정해졌으나 컨테이너가 준비되지 않은 상태입니다(둘 다 phase 는 Pending). `describe` 의 Events 에서 FailedScheduling 이 보이는지로 구분합니다.',
     example: 'requests 를 실제 사용량보다 크게 잡아 두면 노드에 여유가 있어도 스케줄이 실패합니다. 클러스터 자원이 남는데 Pending 이 쌓이면 이 설정을 먼저 봐야 합니다.' },
 
   { diff: 'extreme', type: 'essay', q: '컨테이너 운영에서 지켜야 할 보안 원칙을 설명하세요.',

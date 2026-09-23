@@ -55,8 +55,8 @@ window.QUIZ_BANK.aws.push(
     explain: '`--namespace`, `--metric-name`, `--dimensions`, `--statistics`, `--period` 다섯 가지가 필수 골격입니다. 기본 모니터링은 5분(300초) 해상도이고, 상세 모니터링을 켜야 1분 단위가 나옵니다.',
     example: '메모리 사용률은 기본 지표에 없으므로 CloudWatch Agent 를 설치해야 `CWAgent` 네임스페이스에 `mem_used_percent` 가 생깁니다.' },
 
-  { diff: 'hard', type: 'short', q: 'CLI 에서 `--profile` 을 매번 붙이지 않도록, 현재 셸 세션의 기본 프로파일을 `prod` 로 지정하는 환경변수 설정은?', answer: 'export AWS_PROFILE=prod', accept: ['AWS_PROFILE=prod', 'set AWS_PROFILE=prod', '$env:AWS_PROFILE="prod"'],
-    explain: '`AWS_PROFILE` 은 `~/.aws/config` 와 `~/.aws/credentials` 의 `[profile prod]` 섹션을 선택합니다. 우선순위는 명령줄 `--profile` > 환경변수 > 기본 프로파일이며, `AWS_ACCESS_KEY_ID` 같은 직접 자격 증명 환경변수가 있으면 그것이 프로파일보다 우선합니다.',
+  { diff: 'hard', type: 'short', q: 'CLI 에서 `--profile` 을 매번 붙이지 않도록, 현재 셸 세션의 기본 프로파일을 `prod` 로 지정하는 환경변수 설정은?', answer: 'export AWS_PROFILE=prod', accept: ['set AWS_PROFILE=prod', '$env:AWS_PROFILE="prod"'],
+    explain: '`AWS_PROFILE` 은 `~/.aws/config` 의 `[profile prod]` 섹션과 `~/.aws/credentials` 의 `[prod]` 섹션을 선택합니다. 우선순위는 명령줄 `--profile` > 환경변수 > 기본 프로파일이며, `AWS_ACCESS_KEY_ID` 같은 직접 자격 증명 환경변수가 있으면 그것이 프로파일보다 우선합니다.',
     example: '`aws sts get-caller-identity` 로 지금 어느 계정·역할로 실행 중인지 확인한 뒤 위험한 명령을 실행하는 습관이 사고를 막습니다.' },
 
   /* ---------------- 과제형 ---------------- */

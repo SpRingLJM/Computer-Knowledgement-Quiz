@@ -23,7 +23,7 @@ window.QUIZ_BANK.network.push(
     explain: '`-showcerts` 는 서버가 보낸 중간 인증서까지 출력합니다. 브라우저는 되는데 curl/Java 에서 "unable to get local issuer certificate" 가 나면 서버가 중간 인증서를 빠뜨린 것이며, 이 출력의 체인 깊이(depth)로 확인합니다. `-servername` 은 SNI 로, 한 IP 에 여러 도메인이 있을 때 필수입니다.',
     example: '마지막의 `Verify return code: 0 (ok)` 가 아니면 체인·만료·호스트명 불일치 중 하나입니다. `-CAfile` 로 사내 CA 를 지정해 재검증할 수 있습니다.' },
 
-  { diff: 'hard', type: 'short', q: '인증서 파일 `server.crt` 의 만료일·주체(Subject)·SAN 을 출력하는 명령어는?', answer: 'openssl x509 -in server.crt -noout -text', accept: ['openssl x509 -in server.crt -text -noout', 'openssl x509 -noout -text -in server.crt', 'openssl x509 -in server.crt -noout -dates -subject -ext subjectAltName', 'openssl x509 -in server.crt -noout -enddate -subject'],
+  { diff: 'hard', type: 'short', q: '인증서 파일 `server.crt` 의 만료일·주체(Subject)·SAN 을 출력하는 명령어는?', answer: 'openssl x509 -in server.crt -noout -text', accept: ['openssl x509 -in server.crt -text -noout', 'openssl x509 -noout -text -in server.crt', 'openssl x509 -in server.crt -noout -dates -subject -ext subjectAltName'],
     explain: '`-noout` 은 인코딩된 본문을 생략하고 `-text` 로 사람이 읽을 형식만 출력합니다. `-enddate` 만 붙이면 만료일 한 줄, `-ext subjectAltName` 으로 SAN 만 볼 수 있습니다.',
     example: '`openssl x509 -in server.crt -noout -checkend 2592000` 은 30일 안에 만료되면 종료 코드 1 을 반환해 cron 알림 스크립트에 바로 쓸 수 있습니다.' },
 
@@ -41,9 +41,9 @@ window.QUIZ_BANK.network.push(
 
   { diff: 'hard', type: 'short', q: '인터페이스 `eth0` 에서 **SYN 패킷만** 캡처하여 어느 IP 가 접속을 시도하는지 보는 `tcpdump` 명령어는?', answer: 'tcpdump -i eth0 "tcp[tcpflags] & tcp-syn != 0 and tcp[tcpflags] & tcp-ack == 0"', accept: ['tcpdump -i eth0 "tcp[tcpflags] == tcp-syn"', 'tcpdump -i eth0 tcp[tcpflags] == tcp-syn', 'tcpdump -i eth0 "tcp[13] == 2"', 'tcpdump -ni eth0 "tcp[tcpflags] == tcp-syn"', 'tcpdump -i eth0 -n "tcp[tcpflags] & (tcp-syn) != 0 and tcp[tcpflags] & (tcp-ack) == 0"'],
     explain: '`tcp[tcpflags]` 는 TCP 헤더 13번째 바이트(플래그)입니다. SYN 만 켜진 패킷(`== tcp-syn`)이 새 연결 시도이고, SYN+ACK 는 응답입니다. `tcp[13] == 2` 는 같은 뜻의 원시 표기입니다.',
-    example: 'SYN flood 의심 시 `tcpdump -ni eth0 "tcp[tcpflags] == tcp-syn" | awk "{print $3}" | cut -d. -f1-4 | sort | uniq -c | sort -rn | head` 로 상위 출발지 IP 를 뽑습니다.' },
+    example: 'SYN flood 의심 시 `tcpdump -ni eth0 "tcp[tcpflags] == tcp-syn" | awk \'{print $3}\' | cut -d. -f1-4 | sort | uniq -c | sort -rn | head` 로 상위 출발지 IP 를 뽑습니다.' },
 
-  { diff: 'normal', type: 'short', q: '서버가 어떤 DNS 리졸버를 실제로 쓰는지(systemd-resolved 환경) 확인하는 명령어는?', answer: 'resolvectl status', accept: ['resolvectl', 'systemd-resolve --status', 'resolvectl dns', 'cat /etc/resolv.conf'],
+  { diff: 'normal', type: 'short', q: '서버가 어떤 DNS 리졸버를 실제로 쓰는지(systemd-resolved 환경) 확인하는 명령어는?', answer: 'resolvectl status', accept: ['resolvectl', 'systemd-resolve --status', 'resolvectl dns'],
     explain: 'systemd-resolved 를 쓰는 Ubuntu 등에서는 `/etc/resolv.conf` 가 `127.0.0.53` 스텁만 가리켜 실제 업스트림이 보이지 않습니다. `resolvectl status` 가 인터페이스별 실제 DNS 서버와 검색 도메인을 보여줍니다.',
     example: 'VPN 연결 후 사내 도메인이 안 풀리면 `resolvectl status` 에서 VPN 인터페이스에 사내 DNS 와 검색 도메인이 붙었는지 확인합니다.' },
 

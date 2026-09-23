@@ -83,7 +83,7 @@ window.QUIZ_BANK.aws.push(
   { diff: 'normal', type: 'ox', q: 'AWS Organizations 의 SCP(Service Control Policy)는 권한을 **부여**하지 않고, 멤버 계정에서 가능한 최대 권한의 **경계**만 정한다.', answer: true,
     explain: 'SCP 로 허용해도 계정 내 IAM 정책이 없으면 아무것도 못 합니다. 관리 계정(management account)에는 SCP 가 적용되지 않습니다. 리전 제한, 루트 사용자 차단, 특정 서비스 금지에 사용.',
     example: '`aws:RequestedRegion` 조건으로 허용 리전 외 모든 API 를 Deny 하는 SCP.' },
-  { diff: 'normal', type: 'short', q: '계정의 IAM 사용자·역할별 마지막 활동과 자격 증명 상태를 CSV 로 받는 자격 증명 보고서 생성 명령어는?', answer: 'aws iam generate-credential-report', accept: ['aws iam get-credential-report'],
+  { diff: 'normal', type: 'short', q: '계정의 IAM 사용자·역할별 마지막 활동과 자격 증명 상태를 CSV 로 받는 자격 증명 보고서 생성 명령어는?', answer: 'aws iam generate-credential-report', accept: [],
     explain: '`generate-credential-report` 로 생성 후 `get-credential-report` 로 다운로드(base64). MFA 여부, 액세스 키 마지막 사용일, 비밀번호 나이를 감사합니다.',
     example: '90일 이상 미사용 액세스 키를 찾아 비활성화하는 월간 보안 점검.' },
   { diff: 'normal', type: 'mcq', q: 'EKS 클러스터에 kubectl 을 연결하기 위해 kubeconfig 를 갱신하는 명령어는?', options: ['aws eks get-token', 'aws eks update-kubeconfig --name my-cluster --region ap-northeast-2', 'kubectl config eks my-cluster', 'aws eks describe-cluster'], answer: 1,

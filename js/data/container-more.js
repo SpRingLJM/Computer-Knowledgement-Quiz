@@ -39,7 +39,7 @@ window.QUIZ_BANK.container.push(
     explain: '`describe` 출력 맨 아래 `Events` 에 `FailedScheduling: 0/3 nodes are available: insufficient cpu` 처럼 이유가 나옵니다. 리소스 부족, 노드 셀렉터·테인트 불일치, PVC 바인딩 실패가 대표적입니다.',
     example: '`Insufficient memory` 면 requests 를 낮추거나 노드를 늘리고, `node(s) had taint` 면 toleration 을 추가합니다.' },
 
-  { diff: 'hard', type: 'short', q: '디플로이먼트 `api` 의 롤아웃 이력(리비전 목록)을 보는 명령어는?', answer: 'kubectl rollout history deployment/api', accept: ['kubectl rollout history deploy/api', 'kubectl rollout history deployment api', 'kubectl rollout history deployment/api -n prod'],
+  { diff: 'hard', type: 'short', q: '디플로이먼트 `api` 의 롤아웃 이력(리비전 목록)을 보는 명령어는?', answer: 'kubectl rollout history deployment/api', accept: ['kubectl rollout history deploy/api', 'kubectl rollout history deployment api'],
     explain: '리비전별로 되돌리려면 `kubectl rollout undo deployment/api --to-revision=2` 를 씁니다. `--record` 는 폐기되었으므로 `kubernetes.io/change-cause` 어노테이션으로 변경 사유를 남기는 것이 권장됩니다.',
     example: '배포 후 문제가 생겼는데 직전 리비전도 문제였다면 이력에서 정상이던 리비전 번호를 찾아 그쪽으로 undo 합니다.' },
 

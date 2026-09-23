@@ -38,7 +38,7 @@ window.QUIZ_BANK.aws.push(
       { hint: '# 3. 오래된 스냅샷 확인 (내 계정 소유분)', answer: 'aws ec2 describe-snapshots --owner-ids self', accept: ['aws ec2 describe-snapshots --owner-ids self --output table', 'aws ec2 describe-snapshots --owner-ids self --query Snapshots[*].[SnapshotId,StartTime]'] },
     ],
     explain: '인스턴스를 종료해도 EBS 볼륨, 스냅샷, 연결 해제된 탄력적 IP 는 남아 계속 과금됩니다. 눈에 안 보이는 잔여 리소스가 비용 누수의 주범입니다.',
-    example: '연결되지 않은 탄력적 IP 는 오히려 사용 중일 때보다 비싸게 과금되도록 설계되어 있습니다. 회수를 유도하기 위한 정책입니다.' },
+    example: '2024년 2월부터 탄력적 IP 를 포함한 모든 퍼블릭 IPv4 주소는 사용 여부와 관계없이 시간당 과금되므로, 어디에도 연결되지 않은 탄력적 IP 는 순수한 낭비입니다.' },
 
   /* ---------------- 서술형 ---------------- */
   { diff: 'normal', type: 'essay', q: 'EC2 인스턴스에서 애플리케이션이 S3 에 접근해야 합니다. 어떤 방식이 권장되며 그 이유는 무엇인지 설명하세요.',

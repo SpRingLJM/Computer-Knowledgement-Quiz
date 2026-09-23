@@ -44,7 +44,7 @@ window.QUIZ_BANK.container.push(
     example: '노드가 NotReady 면 `systemctl status kubelet` 과 `journalctl -u kubelet` 을 노드에서 확인합니다.' },
 
   /* ---------------- NORMAL ---------------- */
-  { diff: 'normal', type: 'short', q: '실행 중인 모든 컨테이너의 CPU·메모리·네트워크 사용량을 실시간으로 보는 명령어는?', answer: 'docker stats', accept: ['docker container stats', 'docker stats --no-stream'],
+  { diff: 'normal', type: 'short', q: '실행 중인 모든 컨테이너의 CPU·메모리·네트워크 사용량을 실시간으로 보는 명령어는?', answer: 'docker stats', accept: ['docker container stats'],
     explain: 'MEM USAGE / LIMIT 로 메모리 제한 대비 사용량, `--no-stream` 으로 한 번만 출력. 컨테이너 안의 `top`/`free` 는 호스트 값을 보여주므로 여기서 봐야 정확합니다.',
     example: '어떤 컨테이너가 호스트 메모리를 잠식하는지 `docker stats --format "{{.Name}} {{.MemUsage}}"` 로 확인.' },
   { diff: 'normal', type: 'short', q: '컨테이너 `web` 안의 `/etc/nginx/nginx.conf` 를 호스트 현재 디렉터리로 복사하는 명령어는?', answer: 'docker cp web:/etc/nginx/nginx.conf .', accept: ['docker cp web:/etc/nginx/nginx.conf ./', 'docker cp web:/etc/nginx/nginx.conf ./nginx.conf', 'docker cp web:/etc/nginx/nginx.conf nginx.conf'],
@@ -153,7 +153,7 @@ window.QUIZ_BANK.container.push(
   { diff: 'extreme', type: 'mcq', q: '노드에서 Pod 들이 `Evicted` 상태로 대량 종료되었고 노드 조건에 `DiskPressure=True` 가 있다. 가장 흔한 원인은?', options: ['PVC 용량 부족', '노드 루트 디스크(이미지 레이어, 컨테이너 로그, emptyDir)가 kubelet 의 eviction 임계값(기본 nodefs 10% 미만)에 도달', 'etcd 디스크 부족', 'Pod 의 메모리 limit 초과'], answer: 1,
     explain: 'kubelet 은 `imagefs.available`/`nodefs.available` 임계값에 도달하면 이미지 GC 후 Pod 를 퇴거합니다. 원인은 로테이션 안 된 컨테이너 로그, 큰 emptyDir, 이미지 누적. `kubectl describe node` 의 Conditions 와 Events 를 봅니다.',
     example: '노드에서 `du -sh /var/lib/containerd /var/log/pods` 로 범인을 찾고, `containerLogMaxSize` 설정과 이미지 GC 임계값을 조정합니다.' },
-  { diff: 'extreme', type: 'short', q: 'Kubernetes 노드에 직접 접속해 containerd 런타임 수준에서 실행 중인 컨테이너 목록을 보는 명령어는?', answer: 'crictl ps', accept: ['sudo crictl ps', 'crictl ps -a', 'ctr -n k8s.io containers ls', 'ctr -n k8s.io c ls', 'sudo crictl ps -a', 'nerdctl -n k8s.io ps'],
+  { diff: 'extreme', type: 'short', q: 'Kubernetes 노드에 직접 접속해 containerd 런타임 수준에서 실행 중인 컨테이너 목록을 보는 명령어는?', answer: 'crictl ps', accept: ['sudo crictl ps', 'nerdctl -n k8s.io ps'],
     explain: '`crictl` 은 CRI 호환 런타임(containerd, CRI-O)용 kubectl 격 도구. `crictl pods`, `crictl logs`, `crictl inspect`, `crictl images`. `ctr` 은 containerd 저수준 CLI(네임스페이스 `k8s.io` 필수).',
     example: 'kubelet 이 죽어 `kubectl` 로 볼 수 없는 노드에서 컨테이너가 실제로 도는지, 이미지가 있는지 확인.' },
   { diff: 'extreme', type: 'mcq', q: 'etcd 의 DB 크기가 quota(기본 2GB)에 도달해 `mvcc: database space exceeded` 알람이 발생했다. 복구 절차는?', options: ['etcd 를 재시작', 'compaction 후 `etcdctl defrag`, 그리고 `etcdctl alarm disarm`', 'etcd 데이터 디렉터리 삭제', 'API 서버 재시작'], answer: 1,
