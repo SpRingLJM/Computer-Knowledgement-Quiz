@@ -65,7 +65,9 @@ const Quiz = (() => {
   };
 
   /* ---------- 일일 세트 생성 ----------
-   * 아직 안 푼 문제를 우선 배치하고, 부족하면 푼 문제 중에서 채움.
+   * 한 번이라도 푼 문제(Store.seen)는 후보에서 완전히 제외한다. (복습은 오답노트에서)
+   * 요청 난이도의 새 문제가 모자라면 가까운 난이도의 "새 문제" 로 채우고 그 내역을 fill 에 남긴다.
+   * 모든 난이도를 합쳐도 모자라면 있는 만큼만 내고, 모자란 수를 lacking 으로 돌려준다.
    */
   function buildDaily(category, count, difficulty) {
     const seed = hashStr(`${todayKey()}|${category}|${count}|${difficulty}`);
@@ -73,11 +75,8 @@ const Quiz = (() => {
     const seen = Store.get().seen;
     const pool = all.filter(q => q.cat === category);
 
-    const pick = (list, n) => {
-      const unseen = shuffle(list.filter(q => !seen[q.id]), rnd);
-      const done = shuffle(list.filter(q => seen[q.id]), rnd);
-      return unseen.concat(done).slice(0, n);
-    };
+    // 안 푼 문제만 섞어서 n 개까지 뽑는다 (푼 문제로 채우지 않음)
+    const pick = (list, n) => shuffle(list.filter(q => !seen[q.id]), rnd).slice(0, n);
 
     let chosen;
     const fill = []; // 부족한 난이도를 인접 난이도에서 보충한 내역
@@ -119,7 +118,8 @@ const Quiz = (() => {
     } else {
       chosen = pickWithFallback(difficulty, count, new Set());
     }
-    return { qids: chosen.map(q => q.id), fill };
+    // lacking: 새 문제가 모자라 요청 수보다 적게 뽑힌 개수
+    return { qids: chosen.map(q => q.id), fill, lacking: count - chosen.length };
   }
 
   /* ---------- 채점 ---------- */
@@ -175,6 +175,14 @@ const Quiz = (() => {
     return q.answer;
   }
 
+  // 분야별·난이도별 아직 한 번도 풀지 않은 문제 수
+  const countUnseen = (cat) => {
+    const seen = Store.get().seen;
+    const r = { total: 0, easy: 0, normal: 0, hard: 0, extreme: 0 };
+    all.filter(q => q.cat === cat && !seen[q.id]).forEach(q => { r.total++; r[q.diff]++; });
+    return r;
+  };
+
   const countBy = (cat) => {
     const r = { total: 0, easy: 0, normal: 0, hard: 0, extreme: 0 };
     all.filter(q => q.cat === cat).forEach(q => { r.total++; r[q.diff]++; });
@@ -182,5 +190,5 @@ const Quiz = (() => {
   };
 
   return { TRACKS, CATEGORIES, DIFFS, TYPES, RANDOM_WEIGHTS, all, byId, catsOf,
-           buildDaily, grade, gradeEssay, gradeTask, answerText, todayKey, countBy };
+           buildDaily, grade, gradeEssay, gradeTask, answerText, todayKey, countBy, countUnseen };
 })();

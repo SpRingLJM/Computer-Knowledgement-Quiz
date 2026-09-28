@@ -138,12 +138,17 @@
 
     const refreshAvail = () => {
       const n = Quiz.countBy(s.category);
+      const u = Quiz.countUnseen(s.category);               // 아직 안 푼 문제 수
       const el = document.getElementById('avail');
-      const { fill } = Quiz.buildDaily(s.category, s.count, s.difficulty);
+      const { fill, lacking } = Quiz.buildDaily(s.category, s.count, s.difficulty);
       const base = s.difficulty === 'random'
-        ? `${Quiz.CATEGORIES[s.category].name} · 전체 ${n.total}문제 (E${n.easy}/N${n.normal}/H${n.hard}/X${n.extreme})`
-        : `${Quiz.CATEGORIES[s.category].name} · ${Quiz.DIFFS[s.difficulty]} ${n[s.difficulty]}문제 보유`;
-      el.innerHTML = h(base) + (fill.length ? ` <span style="color:var(--warn)">· ${fill.map(f => `${Quiz.DIFFS[f.from]} 부족분 ${f.n}개는 ${Quiz.DIFFS[f.to]} 에서 보충`).join(', ')}</span>` : '');
+        ? `${Quiz.CATEGORIES[s.category].name} · 새 문제 ${u.total} / 전체 ${n.total} (E${u.easy}/N${u.normal}/H${u.hard}/X${u.extreme})`
+        : `${Quiz.CATEGORIES[s.category].name} · ${Quiz.DIFFS[s.difficulty]} 새 문제 ${u[s.difficulty]} / 전체 ${n[s.difficulty]}`;
+      const warn = [
+        ...fill.map(f => `${Quiz.DIFFS[f.from]} 부족분 ${f.n}개는 ${Quiz.DIFFS[f.to]} 에서 보충`),
+        ...(lacking > 0 ? [`새 문제가 모자라 ${s.count - lacking}문제만 출제`] : []),
+      ];
+      el.innerHTML = h(base) + (warn.length ? ` <span style="color:var(--warn)">· ${h(warn.join(', '))}</span>` : '');
     };
     refreshAvail();
 
@@ -170,10 +175,36 @@
       refreshAvail();
     });
 
-    document.getElementById('start').onclick = () => {
+    document.getElementById('start').onclick = async () => {
       if (active && !confirm('진행 중인 세션을 버리고 새로 시작할까요?')) return;
-      const { qids, fill } = Quiz.buildDaily(s.category, s.count, s.difficulty);
-      if (!qids.length) return alert('해당 조건의 문제가 없습니다.');
+      const { qids, fill, lacking } = Quiz.buildDaily(s.category, s.count, s.difficulty);
+      const catName = Quiz.CATEGORIES[s.category].name;
+      // 이 분야의 문제를 전부 풀었으면 시작하지 않고 복습 방법을 안내
+      if (!qids.length) {
+        await showNotice({
+          title: '새 문제가 없습니다',
+          lines: [`${catName} 의 모든 문제를 한 번씩 풀었습니다.`,
+                  '이미 푼 문제는 오늘의 퀴즈에 다시 나오지 않습니다. 오답노트에서 복습하거나 다른 분야를 선택해 주세요.'],
+          ok: '확인',
+        });
+        return;
+      }
+      // 난이도 보충이나 문제 수 부족이 있으면 알림창으로 알리고, 확인을 눌러야 시작
+      if (fill.length || lacking > 0) {
+        const byDiff = {};                                  // 실제 출제 난이도 구성
+        qids.forEach(id => { const d = Quiz.byId[id].diff; byDiff[d] = (byDiff[d] || 0) + 1; });
+        const mix = ['easy', 'normal', 'hard', 'extreme'].filter(d => byDiff[d]).map(d => `${Quiz.DIFFS[d]} ${byDiff[d]}`).join(' + ');
+        const lines = [];
+        if (s.difficulty !== 'random') {
+          const left = Quiz.countUnseen(s.category)[s.difficulty];
+          lines.push(`${Quiz.DIFFS[s.difficulty]} 에서 아직 풀지 않은 문제가 ${left}개뿐이라 ${s.count}문제를 채울 수 없습니다.`);
+        }
+        fill.forEach(f => lines.push(`${Quiz.DIFFS[f.from]} 부족분 ${f.n}개를 ${Quiz.DIFFS[f.to]} 새 문제로 채웠습니다.`));
+        if (lacking > 0) lines.push(`다른 난이도까지 합쳐도 새 문제가 모자라 ${qids.length}문제만 출제합니다.`);
+        lines.push(`이번 구성: ${mix} (총 ${qids.length}문제)`);
+        const go = await showNotice({ title: '문제 부족으로 난이도를 조정했습니다', lines, ok: '이대로 시작', cancel: '취소' });
+        if (!go) return;
+      }
       startSession({ mode: 'daily', cat: s.category, diff: s.difficulty, qids, fill });
     };
     const r = document.getElementById('start-review');
@@ -183,6 +214,33 @@
     };
     const rs = document.getElementById('resume'); if (rs) rs.onclick = () => navigate('/quiz');
     const dc = document.getElementById('discard'); if (dc) dc.onclick = () => { Store.get().active = null; Store.save(); route(); };
+  }
+
+  // 앱 안 알림창. 브라우저 기본 alert 대신 다크/라이트 테마를 따르는 모달을 띄우고,
+  // 확인(true) / 취소·바깥 클릭·Esc(false) 를 Promise 로 돌려준다.
+  function showNotice({ title, lines = [], ok = '확인', cancel = null }) {
+    return new Promise(resolve => {
+      const wrap = document.createElement('div');
+      wrap.className = 'modal-back';
+      wrap.innerHTML = `<div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-t">
+          <div class="modal-t" id="modal-t">⚠️ ${h(title)}</div>
+          ${lines.map(l => `<p>${h(l)}</p>`).join('')}
+          <div class="modal-actions">
+            ${cancel ? `<button class="btn" data-v="0">${h(cancel)}</button>` : ''}
+            <button class="btn primary" data-v="1">${h(ok)}</button>
+          </div>
+        </div>`;
+      const close = (v) => { document.removeEventListener('keydown', onKey); wrap.remove(); resolve(v); };
+      const onKey = (e) => { if (e.key === 'Escape') close(false); if (e.key === 'Enter') close(true); };
+      wrap.addEventListener('click', e => {
+        if (e.target === wrap) return close(false);          // 바깥(어두운 배경) 클릭 = 취소
+        const b = e.target.closest('button[data-v]');
+        if (b) close(b.dataset.v === '1');
+      });
+      document.addEventListener('keydown', onKey);
+      document.body.appendChild(wrap);
+      wrap.querySelector('.btn.primary').focus();           // Enter 로 바로 확인 가능
+    });
   }
 
   function sessionTitle(sess) {
