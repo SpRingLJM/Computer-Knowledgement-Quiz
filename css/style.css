@@ -379,3 +379,21 @@ textarea.ans:disabled { opacity: .7; }
 .modal p { margin: 6px 0; font-size: 14.5px; line-height: 1.6; }
 .modal p:last-of-type { font-weight: 700; }
 .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+
+/* 통계: 난이도 표시 (색은 기존 난이도 변수 사용) */
+.dchip { display: inline-block; padding: 1px 7px; margin: 2px 4px 2px 0; border-radius: 999px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+.dchip.easy { background: rgba(60,207,142,.15); color: var(--easy); }
+.dchip.normal { background: rgba(91,140,255,.15); color: var(--normal); }
+.dchip.hard { background: rgba(245,185,66,.15); color: var(--hard); }
+.dchip.extreme { background: rgba(255,92,108,.15); color: var(--extreme); }
+td.dcell { line-height: 1.9; }
+.stat .bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin: 8px 0 6px; }
+.stat .bar > div { height: 100%; background: var(--accent); }
+.stat.diff-easy .bar > div { background: var(--easy); }
+.stat.diff-normal .bar > div { background: var(--normal); }
+.stat.diff-hard .bar > div { background: var(--hard); }
+.stat.diff-extreme .bar > div { background: var(--extreme); }
+.table-wrap { overflow-x: auto; }
+/* 좁은 화면에서 머리글·분야명이 한 글자씩 끊기지 않게: 표만 가로 스크롤 */
+.table-wrap th, .table-wrap td:not(.dcell) { white-space: nowrap; }
+.table-wrap td.dcell { min-width: 150px; }

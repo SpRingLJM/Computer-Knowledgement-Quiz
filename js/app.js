@@ -681,6 +681,25 @@
     });
     const recent = st.sessions.slice(-15).reverse();
 
+    // 난이도별 집계: 푼 문제(고유) 수, 전체 문제 수, 정답·오답 횟수
+    const DIFF_KEYS = ['easy', 'normal', 'hard', 'extreme'];
+    const diffStat = (cat) => DIFF_KEYS.map(d => {
+      const ids = seen.filter(([id]) => { const q = Quiz.byId[id]; return q && q.diff === d && (!cat || q.cat === cat); });
+      const c = ids.reduce((a, [, s]) => a + s.correct, 0), w = ids.reduce((a, [, s]) => a + s.wrong, 0);
+      const total = cat ? Quiz.countBy(cat)[d] : Quiz.all.filter(q => q.diff === d).length;
+      return { d, solved: ids.length, total, c, w };
+    });
+    const rate = (c, w) => (c + w ? Math.round(c / (c + w) * 100) + '%' : '-');
+    // 분야 표의 난이도 칸: 난이도 색 칩 + 푼 수/전체 (문제가 없는 난이도는 생략)
+    const diffCell = (cat) => diffStat(cat).filter(x => x.total).map(x =>
+      `<span class="dchip ${x.d}" title="${Quiz.DIFFS[x.d]}: ${x.solved}/${x.total} 풀이 · 정답률 ${rate(x.c, x.w)}">${Quiz.DIFFS[x.d]} ${x.solved}/${x.total}</span>`).join('');
+    // 세션에서 실제로 푼 문제들의 난이도 구성 (자동 보충이 있었던 세트도 실제 구성이 보이도록)
+    const sessMix = (s) => {
+      const m = {};
+      (s.results || []).forEach(r => { const q = Quiz.byId[r.qid]; if (q) m[q.diff] = (m[q.diff] || 0) + 1; });
+      return DIFF_KEYS.filter(d => m[d]).map(d => `<span class="dchip ${d}">${Quiz.DIFFS[d]} ${m[d]}</span>`).join('');
+    };
+
     $app.innerHTML = `
       <h1>통계</h1>
       <p class="sub">이 브라우저에 저장된 학습 기록</p>
@@ -690,22 +709,33 @@
         <div class="stat"><div class="v">${totalC + totalW ? Math.round(totalC / (totalC + totalW) * 100) : 0}%</div><div class="k">누적 정답률</div></div>
         <div class="stat"><div class="v">${Object.keys(st.notebook).length}</div><div class="k">오답노트</div></div>
       </div>
+      <div class="card" style="margin-top:14px">
+        <h2 style="margin-top:0">난이도별 진도</h2>
+        <div class="stat-grid">
+          ${diffStat(null).map(x => `<div class="stat diff-${x.d}">
+            <div class="k"><span class="chip ${x.d}">${Quiz.DIFFS[x.d]}</span></div>
+            <div class="v">${x.solved} <span class="hint" style="font-size:14px">/ ${x.total}</span></div>
+            <div class="bar"><div style="width:${x.total ? Math.round(x.solved / x.total * 100) : 0}%"></div></div>
+            <div class="k">정답률 ${rate(x.c, x.w)}</div>
+          </div>`).join('')}
+        </div>
+      </div>
       ${Object.entries(Quiz.TRACKS).map(([tk, t]) => {
         const rows = perCat.filter(r => Quiz.CATEGORIES[r.k].track === tk);
         const solved = rows.reduce((a, r) => a + r.solved, 0);
         const total = rows.reduce((a, r) => a + r.total, 0);
         return `<div class="card" style="margin-top:14px">
           <h2 style="margin-top:0">${t.icon} ${h(t.name)} <span class="hint">${solved} / ${total}</span></h2>
-          <table><thead><tr><th>분야</th><th>진도</th><th>정답률</th><th>오답노트</th></tr></thead><tbody>
-          ${rows.map(r => `<tr><td>${Quiz.CATEGORIES[r.k].icon} ${h(Quiz.CATEGORIES[r.k].name)}</td><td>${r.solved} / ${r.total}</td><td>${r.c + r.w ? Math.round(r.c / (r.c + r.w) * 100) + '%' : '-'}</td><td>${r.nb}</td></tr>`).join('')}
-          </tbody></table>
+          <div class="table-wrap"><table><thead><tr><th>분야</th><th>진도</th><th>난이도별 (푼 수/전체)</th><th>정답률</th><th>오답노트</th></tr></thead><tbody>
+          ${rows.map(r => `<tr><td>${Quiz.CATEGORIES[r.k].icon} ${h(Quiz.CATEGORIES[r.k].name)}</td><td>${r.solved} / ${r.total}</td><td class="dcell">${diffCell(r.k)}</td><td>${r.c + r.w ? Math.round(r.c / (r.c + r.w) * 100) + '%' : '-'}</td><td>${r.nb}</td></tr>`).join('')}
+          </tbody></table></div>
         </div>`;
       }).join('')}
       <div class="card">
         <h2 style="margin-top:0">최근 세션</h2>
-        ${recent.length ? `<table><thead><tr><th>일시</th><th>세션</th><th>점수</th></tr></thead><tbody>
-        ${recent.map(s => `<tr><td class="hint">${new Date(s.at).toLocaleString('ko-KR')}</td><td>${h(sessionTitle(s))}</td><td>${s.correct} / ${s.total} (${s.total ? Math.round(s.correct / s.total * 100) : 0}%)</td></tr>`).join('')}
-        </tbody></table>` : '<div class="empty">아직 완료한 세션이 없습니다.</div>'}
+        ${recent.length ? `<div class="table-wrap"><table><thead><tr><th>일시</th><th>세션</th><th>푼 난이도</th><th>점수</th></tr></thead><tbody>
+        ${recent.map(s => `<tr><td class="hint">${new Date(s.at).toLocaleString('ko-KR')}</td><td>${h(sessionTitle(s))}</td><td class="dcell">${sessMix(s)}</td><td>${s.correct} / ${s.total} (${s.total ? Math.round(s.correct / s.total * 100) : 0}%)</td></tr>`).join('')}
+        </tbody></table></div>` : '<div class="empty">아직 완료한 세션이 없습니다.</div>'}
       </div>
       <div class="actions"><button class="btn danger" id="reset">모든 기록 초기화</button></div>`;
     document.getElementById('reset').onclick = () => { if (confirm('학습 기록·오답노트를 모두 삭제합니다. 계속할까요?')) { Store.reset(); route(); } };
